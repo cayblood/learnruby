@@ -1,0 +1,3 @@
+[submodule "koans/syver"]
+	path = koans/syver
+	url = git@github.com:7er/my_ruby_koans_repository.git
