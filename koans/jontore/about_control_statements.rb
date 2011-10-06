@@ -105,7 +105,7 @@ class AboutControlStatements < EdgeCase::Koan
       result << i 
     end
     #EVEN COOLER
-    assert_equal (1..10).to_a.reject{|x| return x %2}, result
+    assert_equal (1..10).to_a.reject{|x| x % 2 == 0}, result
   end
 
   def test_for_statement
