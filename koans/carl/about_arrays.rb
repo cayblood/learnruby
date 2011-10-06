@@ -45,40 +45,40 @@ class AboutArrays < EdgeCase::Koan
   end
 
   def test_arrays_and_ranges
-    assert_equal __, (1..5).class
+    assert_equal Range, (1..5).class
     assert_not_equal [1,2,3,4,5], (1..5)
-    assert_equal __, (1..5).to_a
-    assert_equal __, (1...5).to_a
+    assert_equal [1,2,3,4,5], (1..5).to_a
+    assert_equal [1,2,3,4], (1...5).to_a
   end
 
   def test_slicing_with_ranges
     array = [:peanut, :butter, :and, :jelly]
 
-    assert_equal __, array[0..2]
-    assert_equal __, array[0...2]
-    assert_equal __, array[2..-1]
+    assert_equal [:peanut, :butter, :and], array[0..2]
+    assert_equal [:peanut, :butter], array[0...2]
+    assert_equal [:and, :jelly], array[2..-1]
   end
 
   def test_pushing_and_popping_arrays
     array = [1,2]
     array.push(:last)
 
-    assert_equal __, array
+    assert_equal [1, 2, :last], array
 
     popped_value = array.pop
-    assert_equal __, popped_value
-    assert_equal __, array
+    assert_equal :last, popped_value
+    assert_equal [1, 2], array
   end
 
   def test_shifting_arrays
     array = [1,2]
     array.unshift(:first)
 
-    assert_equal __, array
+    assert_equal [:first, 1, 2], array
 
     shifted_value = array.shift
-    assert_equal __, shifted_value
-    assert_equal __, array
+    assert_equal :first, shifted_value
+    assert_equal [1, 2], array
   end
 
 end
