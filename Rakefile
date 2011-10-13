@@ -6,3 +6,5 @@ task :enlighten_many do
     end
   end
 end
+
+task :default => :enlighten_many
