@@ -4,4 +4,4 @@
 # If you change this key, all old signed cookies will become invalid!
 # Make sure the secret is at least 30 characters and all random,
 # no regular words or you'll be exposed to dictionary attacks.
-Chat::Application.config.secret_token = 'd884a4797cd7c0d453f2d1a769b0813a8c64c64b174b8a9cc4b17ad9d68a0eafb81f02b327772b33b98c1f6511341fafa8c5e9bde9a2330bed1d624a9001523b'
+Chat::Application.config.secret_token = 'de5c6d89a9b6bc300b0e19761d9049bcc97536cb115eaf1bd834f793212dc48ed9497fb957655710b1182b513af552038816bdef767c087ac9bf118aca5e9d76'
