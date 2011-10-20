@@ -13,28 +13,48 @@
 # and
 #   about_triangle_project_2.rb
 #
-def triangle(a, b, c)
-  if is_equilateral a, b, c
-    result = :equilateral
-  elsif is_isosceles a, b, c
-    result = :isosceles
-  elsif is_scalene a, b, c
-    result = :scalene
+
+class Triangle
+  def initialize(a, b, c)
+    @sides = [a, b, c].sort
+    @num_unique_sides = @sides.uniq.size
+  end
+
+  def get_triangle_type
+    if not valid?
+      raise TriangleError
+    end
+
+    get_triangle_symbols
+  end
+
+  def valid?
+    @sides[0] + @sides[1] > @sides[2]
+  end
+
+  def get_triangle_symbols
+    if equilateral?
+      :equilateral
+    elsif isosceles?
+      :isosceles
+    else
+      :scalene
+    end
+  end
+
+  def equilateral?
+    @num_unique_sides == 1
+  end
+
+  def isosceles?
+    @num_unique_sides == 2
   end
 end
 
-def is_equilateral(a, b, c)
-  a == b and b == c
+def triangle(a, b, c)
+  Triangle.new(a, b, c).get_triangle_type
 end
 
-def is_isosceles(a, b, c)
-  a == b or b == c or a == c
-end
-
-def is_scalene(a, b, c)
-  a != b and b != c and c != a
-end
-
-# Error class used in part 2.  No need to change this code.
 class TriangleError < StandardError
 end
+
