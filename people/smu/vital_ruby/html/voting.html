@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>LAB 4: Vote Tallies</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn how to read and write files</li>
+<li>Learn how to use regular expressions to split text</li>
+</ul>
+
+
+<h2>Discussion</h2>
+
+<p>It's time to tally up the votes.  There are two data files to be used
+with this assignment.  The "presentations.txt" file contains a list of
+presentations that have been submitted to the selection committee.
+The file "votes.txt" contains a list of the selection committee's
+votes against all the presentations.</p>
+
+<p>For this assignment,</p>
+
+<ul>
+<li>Read the file "presentations.txt" and create a presentation object
+for each line of the file (see below for the line format).</li>
+<li>Read the file "votes.txt" and apply the votes to each of the
+presentations.</li>
+<li>Display the presentations with an average score of 4 or more.</li>
+<li>Display the presentations with an average score of 2 or less.</li>
+</ul>
+
+
+<h2>Format for "<code>presentations.txt</code>"</h2>
+
+<p>Each line in this file represents a single presentation.  There are
+three fields, delimited by colons:</p>
+
+<ol>
+<li><p>The ID number of the presentation.  This number is unique and is
+used by the votes.txt file to identify the presentation receiving
+votes.</p></li>
+<li><p>The title of the presentation</p></li>
+<li><p>The name of the presentor</p></li>
+<li><p>The category of the talk (e.g. Ruby, iPhone)</p></li>
+</ol>
+
+
+<p>Examples:</p>
+
+<pre><code>1:Pascal's Principle:Jenny Titchmarsh:physics
+2:Kinetic Theory of Gas:Amy Smith:physics
+3:Naturalistic Healing:Bob Gifford:health
+</code></pre>
+
+<h2>Format for "votes.txt"</h2>
+
+<p>Each line in this file is a score, assigned by one of the selection
+committee memebers for a single presentation.  Each line consists of
+two numbers.  The first is the numeric ID for the presentation.  The
+second number is the score (from 1 to 5) for that particular
+presentation.</p>
+
+<p>Examples votes.txt file:</p>
+
+<pre><code>16 4
+3 4
+16 1
+</code></pre>
+
+<p>The above represents presentation number 16 getting a score of 4,
+presentation number 3 getting a score of 4, and presentation number 16
+getting a score of 1.  Notice that any given presentation may get
+several scores.</p>
+
+<h4>Hint -- Splitting up colon delimited fields</h4>
+
+<div class="solution">
+
+<p>If you have a string with colon delimited fields, you can split out
+the strings into individual variables with a split command:</p>
+
+<pre><code>s = "6:10 Key Success Principles:Mary Bradman:business"
+number, title, author, category = s.split(/:/)
+
+number   # =&gt; "6"
+title    # =&gt; "10 Key Success Principles"
+author   # =&gt; "Mary Bradman"
+category # =&gt; "business"
+</code></pre>
+
+</div>
+
+<h4>Hint -- <code>votes.txt</code> input file</h4>
+
+<div class="solution">
+
+<p>Here is an example input file to use for the votes.</p>
+
+<pre><code>9 5
+3 2
+14 4
+5 1
+7 1
+12 3
+17 2
+8 3
+15 1
+7 3
+1 2
+12 3
+18 3
+16 1
+3 2
+3 3
+21 1
+9 4
+2 1
+12 2
+5 1
+24 5
+11 1
+23 2
+11 1
+20 1
+14 5
+3 3
+12 3
+12 3
+11 1
+2 3
+19 5
+9 4
+13 3
+11 2
+13 4
+13 3
+18 2
+5 1
+13 3
+9 5
+1 1
+13 2
+16 2
+3 4
+17 1
+11 1
+16 2
+2 3
+20 1
+20 1
+8 3
+1 1
+22 3
+24 3
+24 4
+9 5
+5 1
+13 4
+8 2
+12 1
+10 1
+9 3
+4 5
+5 1
+4 5
+1 2
+20 1
+2 1
+12 3
+14 4
+7 3
+4 3
+2 1
+11 1
+22 3
+11 2
+18 2
+5 1
+10 1
+7 3
+2 2
+4 5
+13 2
+15 1
+5 1
+5 1
+9 4
+8 3
+17 2
+3 3
+3 2
+9 3
+2 2
+9 5
+14 5
+1 1
+20 1
+15 1
+16 1
+4 5
+18 3
+10 1
+5 1
+5 1
+21 1
+15 1
+5 1
+12 1
+5 1
+9 4
+24 5
+13 4
+5 1
+3 3
+11 1
+13 4
+1 1
+8 3
+8 4
+4 5
+13 4
+7 3
+6 1
+19 3
+16 2
+21 1
+4 4
+2 2
+9 5
+2 3
+19 4
+17 3
+5 1
+7 2
+23 2
+24 4
+9 5
+5 1
+14 4
+4 3
+5 1
+18 3
+21 1
+21 1
+8 2
+12 2
+14 5
+15 1
+6 1
+24 5
+21 1
+7 3
+8 3
+20 1
+15 1
+24 3
+8 4
+10 1
+1 1
+1 1
+13 3
+13 3
+1 1
+21 2
+11 2
+9 3
+19 5
+6 1
+3 4
+6 2
+13 4
+17 2
+16 2
+21 1
+16 2
+20 1
+15 1
+13 4
+1 1
+24 3
+17 2
+15 1
+21 1
+13 2
+1 2
+15 1
+5 1
+9 5
+10 1
+3 4
+8 4
+6 2
+4 4
+19 5
+1 1
+15 1
+19 5
+3 2
+15 1
+11 2
+6 1
+21 1
+16 2
+21 2
+10 1
+7 2
+13 2
+7 1
+19 3
+7 3
+18 4
+12 3
+10 1
+13 3
+7 3
+19 4
+8 2
+10 1
+16 2
+22 2
+2 3
+10 1
+12 3
+10 1
+16 1
+9 5
+17 1
+17 2
+11 1
+5 1
+1 1
+3 3
+15 1
+13 3
+3 4
+10 1
+1 1
+4 4
+10 1
+24 4
+14 3
+6 1
+5 1
+11 2
+11 2
+2 2
+16 1
+13 2
+</code></pre>
+
+</div>
+
+<h4>Hint -- <code>presentations.txt</code> input file</h4>
+
+<div class="solution">
+
+<p>Here is an example input file to use for the list of presentations.</p>
+
+<pre><code>1:Pascal's Principle:Jenny Titchmarsh:physics
+2:Kinetic Theory of Gas:Amy Smith:physics
+3:Schulung Fluid Templating:Elizabeth Gifford:physics
+4:Bernoulli Principle:Amy Titchmarsh:physics
+5:Kinesics:Jane Jones:motion
+6:10 Key Success Principles:Mary Bradman:business
+7:Bioprocessing:CJ Johston:biology
+8:Effectiveness of Distance Education:Susan Gifford:education
+9:iPhone at OOPSLA:CJ Smith:iphone
+10:Se Xul To Do:Helen Rendell:business
+11:Social Media Revolution:Amy Gifford:media
+12:The GPS to Your International Business Success:Kate Jones:business
+13:Identity Theft on the Internet:Susan Newman:business
+14:Diabetes and Fear of Depth:Helen Bradman:health
+15:Concept of Bath:Elizabeth Kling:health
+16:Three Questions:Paul Carella:business
+17:Defamation and Superliving:Susan Lavery:health
+18:Clapping for Holistic Health:Joe Smith:health
+19:Objectivity and Health:Susan Carella:health
+20:Stress Management or a Lie?:Jim Titchmarsh:health
+21:Holistic Romance:Joe Newman:health
+22:Physiology of Laughter:Helen Rendell:health
+23:Economic Long Tail:Helen Bradman:business
+24:Zero Budget Ideas to Incentivise:Helen Rendell:business
+</code></pre>
+
+</div>
+
+<h4>Hint - Source for Tally</h4>
+
+<div class="solution">
+
+<p><strong>tally.rb</strong></p>
+
+<pre><code>#!/usr/bin/env ruby
+
+require 'presentation'
+
+def read_presentations(ins)
+  result = {}
+  ins.each do |line|
+    id, title, presenter, category = line.strip.split(/:/)
+    p = Presentation.new(title, presenter, category)
+    result[id.to_i] = p
+  end
+  result
+end
+
+presentations = open("../presentations.txt") { |f| read_presentations(f) }
+
+open("../votes.txt") do |votes|
+  votes.each do |line|
+    id, score = line.split
+    p = presentations[id.to_i]
+    if p
+      p.add_score(score.to_i)
+    end
+  end
+end
+
+presentations.values.sort_by { |p| p.average_score }.each do |p|
+  printf "%5.2f: %s\n", p.average_score, p.title
+end
+</code></pre>
+
+</div>
+
+<h4>Hint -- Tests and Source for Presentation</h4>
+
+<div class="solution">
+
+<p><strong>presentation_test.rb</strong></p>
+
+<pre><code>require 'test/unit'
+require 'presentation'
+
+class PresentationTest &lt; Test::Unit::TestCase
+  def setup
+    @p = Presentation.new("TITLE", "PRESENTER", "CAT")
+  end
+
+  def test_has_title_and_presenter
+    assert_equal "TITLE", @p.title
+    assert_equal "PRESENTER", @p.presenter
+    assert_equal "CAT", @p.category
+  end
+
+  def test_can_report_average_score_with_one_score
+    @p.add_score(4)
+    assert_equal 4, @p.average_score
+  end
+
+  def test_can_report_average_score_with_two_scores
+    @p.add_score(4)
+    @p.add_score(5)
+    assert_equal 4.5, @p.average_score
+  end
+end
+</code></pre>
+
+<p><strong>presentation.rb</strong></p>
+
+<pre><code>class Presentation
+  attr_reader :title, :presenter, :category
+
+  def initialize(title, presenter, category)
+    @title = title
+    @presenter = presenter
+    @category = category
+    @total = 0.0
+    @count = 0
+  end
+
+  def add_score(n)
+    @total += n
+    @count += 1
+  end
+
+  def average_score
+    @total / @count
+  end
+end
+</code></pre>
+
+</div>
+
+<hr>
+
+
+<p><a href="index.html">Back to Index</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

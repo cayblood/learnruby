@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>LAB 2: Wondrous Number Sequence</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn about arrays and hashes in Ruby</li>
+</ul>
+
+
+<h2>Lab</h2>
+
+<h3>Part 1 -- Basic Functionality</h3>
+
+<p>Write a function that tacks a positive integer n and returns the
+wondrous sequence for n.</p>
+
+<p>Examples:</p>
+
+<pre><code> wondrous_sequence(5)  # =&gt; [5, 16, 8, 4, 2, 1]
+</code></pre>
+
+<h4>Hint -- Source for <code>wondrous_sequence</code> (click to view)</h4>
+
+<div class="solution">
+
+<pre>
+def wondrous_sequence(n)
+  result = []
+  i = n
+  loop do
+    result << i
+    break if i == 1
+    if (i%2) == 0
+      i = i/2
+    else
+      i = 3*i + 1
+    end
+  end
+  result
+end
+</pre>
+
+
+</div>
+
+<h3>Part 2 -- Optimization</h3>
+
+<p>Suppose we are asked to calculate the wondrous sequence for 5, we
+would get [5, 16, 8, 4, 2, 1].  Now suppose we are asked for the
+wondrous sequence for 10.  After the first step we get 5, but we
+already know the value of 5's sequence (since we just got done
+calculating it).</p>
+
+<p>Write an optimized version of wondrous_sequence that remembers prior
+calls and uses that to avoid generating the entire sequence from
+scratch.</p>
+
+<h4>Hint -- Use a cache (click to view)</h4>
+
+<div class="solution">
+
+<p>You will need to remember sequences you have seen before.  Perhaps a
+global Hash (maybe called CACHE) would be helpful.</p>
+
+<pre><code>CACHE = {}
+</code></pre>
+
+<p>Then in you code, whenever you calculate a wondrous sequence, store it
+in the cache.</p>
+
+</div>
+
+<h4>Hint -- Source for Wondrous Number Sequence Specification (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>require "wondrous_sequence"
+
+describe "#wondrous_sequence" do
+  before do
+    CACHE.clear
+  end
+
+  it "calculates the sequence for 5" do
+    wondrous_sequence(5).should == [5,16,8,4,2,1]
+  end
+
+  it "uses the cached value for 5 recalculating 5's sequence" do
+    CACHE[5] = [:FIVE_SEQUENCE]
+    wondrous_sequence(5).should == [:FIVE_SEQUENCE]
+  end
+
+  it "uses the cached value for 5 in calculating 17's sequence" do
+    CACHE[5] = [:FIVE_SEQUENCE]
+    wondrous_sequence(17).should ==
+      [17, 52, 26, 13, 40, 20, 10, :FIVE_SEQUENCE]
+  end
+
+  it "updates the cache when calculating 17" do
+    CACHE[5] = [:FIVE_SEQUENCE]
+    wondrous_sequence(17)
+    CACHE[17].should == [17, 52, 26, 13, 40, 20, 10, :FIVE_SEQUENCE]
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hint -- Source for Wondrous Number Sequence (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>CACHE = {}
+
+def wondrous_sequence(n)
+  result = []
+  i = n
+  loop do
+    if CACHE[i]
+      result += CACHE[i]
+      break
+    end
+    result &lt;&lt; i
+    break if i == 1
+    if (i%2) == 0
+      i = i/2
+    else
+      i = 3*i + 1
+    end
+  end
+  CACHE[n] = result
+  result
+end
+</code></pre>
+
+</div>
+
+<hr>
+
+
+<p><a href="index.html">Back to Index</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

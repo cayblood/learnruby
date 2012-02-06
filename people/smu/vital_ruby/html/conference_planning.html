@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>LAB 3: Conference Planning</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn how to create Ruby objects and classes</li>
+</ul>
+
+
+<h2>Discussion</h2>
+
+<p>You are organizing a major conference and you decide to write some
+software that will help the selection committee select the best
+presentations from those submitted.  Each member of the selection
+committee will rate the presentations from 1 to 5.</p>
+
+<h2>Lab</h2>
+
+<p>For this assignment,</p>
+
+<ol>
+<li><p>Create a Presentation Class.  It should:</p>
+
+<ul>
+<li>Have a title</li>
+<li>Have the name of the presentor</li>
+<li>Be able to add scores from the selection committee.  Scores
+will be an integer from 1 to 5.</li>
+<li>Be able to report its average score</li>
+</ul>
+</li>
+<li><p>The add_score method should raise an exception if the score is
+less than 1 or greater than 5.</p></li>
+</ol>
+
+
+<p>Example:</p>
+
+<pre><code>presentation = Presentation.new("How To Program in Ruby, "Ruby Hacker")
+presentation.add_score(5)
+presentation.add_score(4)
+presentation.average_score  # =&gt; 4.5
+</code></pre>
+
+<h4>Hint -- Specs for <code>Presentation</code></h4>
+
+<div class="solution">
+
+<p>Here is the specification for the presentation class.</p>
+
+<pre><code>require 'spec_helper'
+require 'presentation'
+
+describe Presentation do
+  let(:presentation) { Presentation.new("TITLE", "PRESENTER") }
+
+  it "has a title and presenter" do
+    presentation.title.should == "TITLE"
+    presentation.presenter.should == "PRESENTER"
+  end
+
+  it "can have scores added to it" do
+    lambda { presentation.add_score(4) }.should_not raise_error
+  end
+
+  it "can calculate the average score with a single score" do
+    presentation.add_score(4)
+    presentation.average_score.should == 4
+  end
+
+  it "can calculate the average of two scores" do
+    presentation.add_score(4)
+    presentation.add_score(5)
+    presentation.average_score.should be_within(0.001).of(4.5)
+  end
+
+  it "rejects too large scores with an error" do
+    lambda {
+      presentation.add_score(6)
+    }.should raise_error(InvalidScoreError)
+  end
+
+  it "rejects too small scores with an error" do
+    lambda {
+      presentation.add_score(0)
+    }.should raise_error(InvalidScoreError)
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hint -- Source for <code>Presentation</code></h4>
+
+<div class="solution">
+
+<p>Here is the source for the presentation class.</p>
+
+<pre><code>class InvalidScoreError &lt; StandardError
+end
+
+
+class Presentation
+  attr_reader :title, :presenter
+
+  def initialize(title, presenter)
+    @title = title
+    @presenter = presenter
+    @total = 0.0
+    @count = 0
+  end
+
+  def add_score(n)
+    fail InvalidScoreError if n &gt; 5 || n &lt; 1
+    @total += n
+    @count += 1
+  end
+
+  def average_score
+    @total / @count
+  end
+end
+</code></pre>
+
+</div>
+      </div>
+    </div>
+  </body>
+</html>
+

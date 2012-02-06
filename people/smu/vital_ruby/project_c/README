@@ -1,0 +1,93 @@
+PROJECT C -- Animal Quiz
+----------------------------------------------------------------------
+
+(from Ruby Quiz #15 -- http://www.rubyquiz.com/quiz15.html)
+
+Write a program that attempts to guess an animal.
+
+It works like this. The program starts by telling the user to think of
+an animal. It then begins asking a series of yes/no questions about
+that animal: does it swim, does it have hair, etc. Eventually, it will
+narrow down the possibilities to a single animal and guess that (Is it
+a mouse?).
+
+If the program has guessed correctly, the game is over and may be
+restarted with a new animal. If the program has guess incorrectly, it
+asks the user for the kind of animal they were thinking of and then
+asks for the user to provide a question that can distinguish between
+its incorrect guess and the correct answer. It then adds the new
+question and animal to its "database" and will guess that animal in
+the future (if appropriate).
+
+Here's an example run:
+
+----
+Is it a mouse? n
+Rats, I lose
+Help me play better next time.
+What animal were you thinking of? dolphin
+Give me a question to distinguish a a mouse from a dolphin. is it aquatic?
+For a dolphin, the answer to your question would be? y
+Thank you
+
+Play again? y
+
+
+Is it aquatic? y
+Is it a dolphin? n
+Rats, I lose
+Help me play better next time.
+What animal were you thinking of? shark
+Give me a question to distinguish a a dolphin from a shark. is it a mammal
+For a shark, the answer to your question would be? n
+Thank you
+
+Play again? y
+
+
+Is it aquatic? n
+Is it a mouse? n
+Rats, I lose
+Help me play better next time.
+What animal were you thinking of? elephant
+Give me a question to distinguish a a mouse from an elephant. Is it a large animal
+For an elephant, the answer to your question would be? y
+Thank you
+
+Play again? y
+
+
+Is it aquatic? n
+Is it a large animal? n
+Is it a mouse? y
+Yea! I win!
+
+Play again? n
+----
+
+HINT:
+
+There is an easy solution that represents the database as a binary
+tree with questions as interior nodes and possible animals as leaf
+nodes. Each interior question node has two children corresponding to a
+yes or no answer. The children are either further questions (which
+will be asked) or an animal (which will be guessed).
+
+ADDITIONAL HINT:
+
+If you wish to store your database of animals and questions in an
+external file to be reused between runs, the YAML library can easily
+do this.  Suppose your database is in an object called ... animals.
+To save your database, do:
+
+    require 'yaml'
+
+    open("database.yml", "w") do |f|
+      f.write(animals.to_yaml)
+    end
+
+To load up a previously saved animal database, do:
+
+   require 'yaml'
+
+   animals = YAML.load_file("database.yml")

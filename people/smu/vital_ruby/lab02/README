@@ -1,0 +1,27 @@
+LAB 2 -- Wondrous Numbers Sequence
+----------------------------------------------------------------------
+
+ASSIGNMENT - Part 1
+-------------------
+
+Write a function that tacks a positive integer n and returns the
+wondrous sequence for n.
+
+Examples:
+
+   wondrous_sequence(5)  # => [5, 16, 8, 4, 2, 1]
+
+ASSIGNMENT - Part 2
+-------------------
+
+Suppose we are asked to calculate the wondrous sequence for 5, we
+would get [5, 16, 8, 4, 2, 1].  Now suppose we are asked for the
+wondrous sequence for 10.  After the first step we get 5, but we
+already know the value of 5's sequence (since we just got done
+calculating it).
+
+Write an optimized version of wondrous_sequence that remembers prior
+calls and uses that to avoid generating the entire sequence from
+scratch.
+
+HINT: Perhaps a global Hash (maybe called CACHE) would be helpful.

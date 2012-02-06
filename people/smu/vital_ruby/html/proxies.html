@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>LAB 5: Read Only Proxies</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn how to read and write files</li>
+<li>Learn how to use regular expressions to split text</li>
+</ul>
+
+
+<h2>Discussion</h2>
+
+<p>Consider the following (partial) Presentation class:</p>
+
+<pre><code>class Presentation
+  attr_accessor :title, :presenter
+end
+</code></pre>
+
+<p>Since attr_accessor is used to define the title and presenter
+attributes, you have the following methods defined:</p>
+
+<ul>
+<li>title</li>
+<li>title=</li>
+<li>presentor</li>
+<li>presentor=</li>
+</ul>
+
+
+<p>Sometimes it is useful to pass a presentation object into some
+software an know that it will not be changed.</p>
+
+<h2>Lab</h2>
+
+<h3>Part 1 -- Read Only Proxy</h3>
+
+<p>Create a ReadOnly proxy class that will take any object and filter out
+any method calls that end with an equals sign.  Any method call that
+does not end in '=' will be forwarded to the object normally.</p>
+
+<p>Example:</p>
+
+<pre><code>p = Presentation.new("Talking to Whales", "Phinehas Phisch")
+ro = ReadOnlyProxy.new(p)
+
+ro.title              # =&gt; "Talking to Whales"
+ro.title = "HACKED"
+ro.title              # =&gt; "Talking to Whales"
+</code></pre>
+
+<h3>Part 2 -- Extra Credit</h3>
+
+<p>Create a "Shadow" proxy object that intercepts write methods (those
+ending in "=") and shadows the new value, without changing the
+original object.</p>
+
+<p>Example:</p>
+
+<pre><code>p = Presentation.new("Talking to Whales", "Phinehas Phisch")
+shadow = ShadowProxy.new(p)
+
+shadow.title              # =&gt; "Talking to Whales"
+shadow.title = "HACKED"
+shadow.title              # =&gt; "HACKED"
+p.title                   # =&gt; "Talking to Whales"
+</code></pre>
+
+<h4>Hint -- Source and Tests for Read Only Proxies</h4>
+
+<div class="solution">
+
+<p><strong>read_only_proxy_test.rb</strong></p>
+
+<pre><code>require 'test/unit'
+require 'read_only_proxy'
+
+class ReadOnlyProxyTest &lt; Test::Unit::TestCase
+  class Thing
+    attr_accessor :name
+  end
+
+  def setup
+    super
+    @thing = Thing.new
+    @thing.name = "THING"
+    @ro = ReadOnlyProxy.new(@thing)
+  end
+
+  def test_creating_proxy
+    assert_not_nil @ro
+  end
+
+  def test_normal_methods_pass_thru
+    assert_equal "THING", @ro.name
+  end
+
+  def test_writing_methods_are_blocked
+    @ro.name = "HACKED"
+    assert_equal "THING", @thing.name
+  end
+end
+</code></pre>
+
+<p><strong>read_only_proxy.rb</strong></p>
+
+<pre><code>class ReadOnlyProxy
+  def initialize(target)
+    @target = target
+  end
+
+  def method_missing(sym, *args, &amp;block)
+    if sym.to_s !~ /=$/
+      @target.send(sym, *args, &amp;block)
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hint -- Source and Tests for Shadow Proxies</h4>
+
+<div class="solution">
+
+<p><strong>shadow_proxy_test.rb</strong></p>
+
+<pre><code>require 'test/unit'
+require 'read_only_proxy'
+
+class ReadOnlyProxyTest &lt; Test::Unit::TestCase
+  class Thing
+    attr_accessor :name
+  end
+
+  def setup
+    super
+    @thing = Thing.new
+    @thing.name = "THING"
+    @ro = ReadOnlyProxy.new(@thing)
+  end
+
+  def test_creating_proxy
+    assert_not_nil @ro
+  end
+
+  def test_normal_methods_pass_thru
+    assert_equal "THING", @ro.name
+  end
+
+  def test_writing_methods_are_blocked
+    @ro.name = "HACKED"
+    assert_equal "THING", @thing.name
+  end
+end
+</code></pre>
+
+<p><strong>shadow_proxy.rb</strong></p>
+
+<pre><code>class ReadOnlyProxy
+  def initialize(target)
+    @target = target
+  end
+
+  def method_missing(sym, *args, &amp;block)
+    if sym.to_s !~ /=$/
+      @target.send(sym, *args, &amp;block)
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h3>For Class Discussion</h3>
+
+<p>In Ruby, you can freeze (almost) any object by calling the method
+:freeze.  Freezing an object prevents anyone from changing the
+immediate instance variables of that object.</p>
+
+<ol>
+<li>In what ways is freezing better than a read-only proxy?</li>
+<li>Under what circumstances would a read-only proxy be a better choice
+than freezing?</li>
+</ol>
+
+
+<hr>
+
+
+<p><a href="index.html">Back to Index</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,65 @@
+LAB 5 -- Read Only Proxies
+----------------------------------------------------------------------
+
+Consider the following (partial) Presentation class:
+
+  class Presentation
+    attr_accessor :title, :presenter
+  end
+
+Since attr_accessor is used to define the title and presenter
+attributes, you have the following methods defined:
+
+  * title
+  * title=
+  * presentor
+  * presentor=
+
+Sometimes it is useful to pass a presentation object into some
+software an know that it will not be changed.
+
+ASSIGNMENT
+----------
+
+Create a ReadOnly proxy class that will take any object and filter out
+any method calls that end with an equals sign.  Any method call that
+does not end in '=' will be forwarded to the object normally.
+
+Example:
+
+  p = Presentation.new("Talking to Whales", "Phinehas Phisch")
+  ro = ReadOnlyProxy.new(p)
+
+  ro.title              # => "Talking to Whales"
+  ro.title = "HACKED"
+  ro.title              # => "Talking to Whales"
+
+
+Extra Credit
+------------
+
+Create a "Shadow" proxy object that intercepts write methods (those
+ending in "=") and shadows the new value, without changing the
+original object.
+
+Example:
+
+  p = Presentation.new("Talking to Whales", "Phinehas Phisch")
+  shadow = ShadowProxy.new(p)
+
+  shadow.title              # => "Talking to Whales"
+  shadow.title = "HACKED"
+  shadow.title              # => "HACKED"
+  p.title                   # => "Talking to Whales"
+
+Discussion
+----------
+
+In Ruby, you can freeze (almost) any object by calling the method
+:freeze.  Freezing an object prevents anyone from changing the
+immediate instance variables of that object. 
+
+(1) In what ways is freezing better than a read-only proxy?
+
+(2) Under what circumstances would a read-only proxy be a better
+    choice than freezing?

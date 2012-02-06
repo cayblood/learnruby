@@ -1,0 +1,32 @@
+LAB 1 -- Wondrous Numbers
+----------------------------------------------------------------------
+
+Consider the following rule for a number n:
+
+  If n is even, then divide it by 2.
+  If n is odd, then multiply it by 3 and add 1.
+
+By repeating the rule over and over, you can generate a sequence of
+numbers using the given rule.  Stop if the sequence reaches 1.
+
+For example, starting with 5:
+
+  5, 16, 8, 4, 2, 1
+
+Another example, staring with 7:
+
+  7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1
+
+Wondrous numbers will generate a sequence that eventually ends with 1.
+
+ASSIGNMENT
+----------
+
+For this assignment,
+
+(1) Write a function wondrous?(n) that takes a positive integer n and
+    returns true if the number is wondrous, and false if it is
+    not-wondrous.
+
+(2) Write some top level code that reads a number from standard input,
+    calls wondrous?(n) and displays the results.

@@ -1,0 +1,23 @@
+PROJECT A -- Conference Scheduling
+----------------------------------------------------------------------
+
+Given:
+
+  (1) a set of presentations (in the same format as the
+      "presentations.txt" file from lab 4) and
+
+  (2) A number of time slots
+
+  (3) A number of tracks
+
+Write a program that will assign presentations to a track and a time
+slot so that:
+
+  (A) No individual speaker is assigned more than once to a time slot.
+
+  (B) The number of different categories in a single time slot is
+      maximized.  (i.e.  If there are a number of iPhone talks, put
+      them in different time slots so that an attendee mainly
+      interested in iPhone development can see as many talks as
+      possible)
+

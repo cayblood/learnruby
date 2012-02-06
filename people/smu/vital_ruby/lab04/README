@@ -1,0 +1,67 @@
+LAB 4 -- Vote Tallies
+----------------------------------------------------------------------
+
+Its time to tally up the votes.  There are two data files to be used
+with this assignment.  The "presentations.txt" file contains a list of
+presentations that have been submitted to the selection committee.
+The file "votes.txt" contains a list of the selection committee's
+votes against all the presentations.
+
+ASSIGNMENT
+----------
+
+For this assignment,
+
+(1) Read the file "presentations.txt" and create a presentation object
+    for each line of the file (see below for the line format).
+
+(2) Read the file "votes.txt" and apply the votes to each of the
+    presentations.
+
+(3) Display the presentations with an average score of 4 or more.
+
+(4) Display the presentations with an average score of 2 or less. 
+
+
+Format for "presentations.txt"
+------------------------------
+
+Each line in this file represents a single presentation.  There are
+three fields, delimited by colons:
+
+  (1) The ID number of the presentation.  This number is unique and is
+      used by the votes.txt file to identify the presentation
+      receiving votes.
+
+  (2) The title of the presentation
+
+  (3) The name of the presentor
+
+  (4) The category of the talk (e.g. Ruby, iPhone)
+
+Examples:
+
+1:Pascal's Principle:Jenny Titchmarsh:physics
+2:Kinetic Theory of Gas:Amy Smith:physics
+3:Naturalistic Healing:Bob Gifford:health
+
+
+Format for "votes.txt"
+----------------------
+
+Each line in this file is a score, assigned by one of the selection
+committee memebers for a single presentation.  Each line consists of
+two numbers.  The first is the numeric ID for the presentation.  The
+second number is the score (from 1 to 5) for that particular
+presentation.  
+
+Examples:
+
+16 4
+3 4
+16 1
+
+The above represents presentation number 16 getting a score of 4,
+presentation number 3 getting a score of 4, and presentation number 16
+getting a score of 1.  Notice that any given presentation may get
+several scores.

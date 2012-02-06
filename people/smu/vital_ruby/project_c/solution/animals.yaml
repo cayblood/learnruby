@@ -1,0 +1,18 @@
+--- !ruby/object:Question 
+"no": !ruby/object:Question 
+  "no": !ruby/object:Animal 
+    name: mouse
+  question: Is it a large animal?
+  "yes": !ruby/object:Question 
+    "no": !ruby/object:Animal 
+      name: horse
+    question: Does it have a trunk?
+    "yes": !ruby/object:Animal 
+      name: elephant
+question: Is it aquatic?
+"yes": !ruby/object:Question 
+  "no": !ruby/object:Animal 
+    name: shark
+  question: Is it a mammal?
+  "yes": !ruby/object:Animal 
+    name: dolphin

@@ -1,2 +1,3 @@
 *.idea
 *.path_progress
+.DS_Store

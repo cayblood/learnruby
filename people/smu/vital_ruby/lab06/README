@@ -1,0 +1,76 @@
+LAB 6 -- Metaprogramming
+----------------------------------------------------------------------
+
+The attr_accessor, attr_reader and attr_writer methods will
+dynamically create attribute accessing methods for you.  For example,
+
+  attr_reader :name
+     ... generates "def name() ... end"
+  attr_writer :name
+     ... generates "def name=(value) ... end"
+  attr_accessor :name
+     ... generates both
+
+Sometimes you have an instance variable that represents a true/false
+state.  For example, a presentation might have an "@advanced" instance
+variable that is true if the presentation is for an advanced audience.
+However, Ruby convention is that methods that return true/false should
+end with a question mark.  Currently, we have to write the question
+mark method by hand:
+
+   def advanced?
+     @advanced
+   end
+
+ASSIGNMENT
+----------
+
+Create an attr_flag class method that will automatically create a
+question mark method referencing the named instance variable.
+
+For Example, this
+
+   class Presentation
+     attr_flag :advanced
+   end
+
+Should be the same as ...
+
+   class Presentation
+     def advanced?
+       @advanced
+     end
+   end
+
+
+Hints
+-----
+
+Methods like attr_flag are best defined in the Module class.  Just
+open the class and add the attr_flag method.
+
+   class Module
+     def attr_flag(*names)
+       ... YOUR CODE GOES HERE ...
+     end
+   end
+
+More Hints
+----------
+
+The "module_eval" method on a Module object that takes a string and
+evaluates it in the context of a module.  It is as if you had typed
+the string directly into a module.
+
+   class Module
+     def define_an_attributes
+       module_eval "def something(); @something; end"
+     end
+   end
+
+will define a method named "something" that accesses the "@something"
+instance variable.
+
+You should be able to use module_eval along with string interpolation
+to create your attr_flag method.
+

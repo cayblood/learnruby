@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'rake/testtask'
+
+task :default => :spec
+
+task :spec do
+  sh "spec --color ."
+end

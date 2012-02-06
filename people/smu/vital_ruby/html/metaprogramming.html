@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>LAB 6: Metaprogramming</h1>
+
+<h2>Goals:</h2>
+
+<ul>
+<li>Learn how attr<em>reader/attr</em>accessor are created</li>
+<li>Learn about class level methods.</li>
+</ul>
+
+
+<h2>Discussion</h2>
+
+<p>The attr<em>accessor, attr</em>reader and attr_writer methods will
+dynamically create attribute accessing methods for you.  For example,</p>
+
+<pre><code>attr_reader :name
+   ... generates "def name() ... end"
+attr_writer :name
+   ... generates "def name=(value) ... end"
+attr_accessor :name
+   ... generates both
+</code></pre>
+
+<p>Sometimes you have an instance variable that represents a true/false
+state.  For example, a presentation might have an "@advanced" instance
+variable that is true if the presentation is for an advanced audience.
+However, Ruby convention is that methods that return true/false should
+end with a question mark.  Currently, we have to write the question
+mark method by hand:</p>
+
+<pre><code>def advanced?
+  @advanced
+end
+</code></pre>
+
+<h2>Lab</h2>
+
+<p>Create an attr_flag class method that will automatically create a
+question mark method referencing the named instance variable.</p>
+
+<p>For Example, this</p>
+
+<pre><code>class Presentation
+  attr_flag :advanced
+end
+</code></pre>
+
+<p>Should be the same as ...</p>
+
+<pre><code>class Presentation
+  def advanced?
+    @advanced
+  end
+end
+</code></pre>
+
+<h4>Hints -- Using Modules (click to view)</h4>
+
+<div class="solution">
+
+<p>Methods like attr<em>flag are best defined in the Module class.  Just
+open the class and add the attr</em>flag method.</p>
+
+<pre><code>class Module
+  def attr_flag(*names)
+    ... YOUR CODE GOES HERE ...
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hints -- <code>module_eval</code> (click to view)</h4>
+
+<div class="solution">
+
+<p>The "module_eval" method on a Module object that takes a string and
+evaluates it in the context of a module.  It is as if you had typed
+the string directly into a module.</p>
+
+<pre><code>class Module
+  def define_an_attributes
+    module_eval "def something(); @something; end"
+  end
+end
+</code></pre>
+
+<p>will define a method named "something" that accesses the "@something"
+instance variable.</p>
+
+<p>You should be able to use module<em>eval along with string interpolation
+to create your attr</em>flag method.</p>
+
+</div>
+
+<h4>Hints -- Source and Tests for <code>attr_flag</code> (click to view)</h4>
+
+<div class="solution">
+
+<p><strong>attr_flag_test.rb</strong></p>
+
+<pre><code>require 'test/unit'
+require 'attr_flag'
+
+class AttrFlagTest &lt; Test::Unit::TestCase
+  class X
+    attr_accessor :ok
+    attr_flag :ok
+    attr_flag :a, :b, :c
+
+    def initialize
+      @a = @b = @c = true
+    end
+  end
+
+  def test_flag_is_true
+    x = X.new
+    x.ok = true
+    assert x.ok?
+  end
+
+  def test_flag_is_false
+    x = X.new
+    x.ok = false
+    assert ! x.ok?
+  end
+
+  def test_defines_multiple_names
+    x = X.new
+    assert x.a?
+    assert x.b?
+    assert x.c?
+  end
+end
+</code></pre>
+
+<p><strong>attr_flag.rb</strong></p>
+
+<pre><code>class Module
+  def attr_flag(*names)
+    names.each do |name|
+      module_eval "def #{name}?(); @#{name}; end"
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<hr>
+
+
+<p><a href="index.html">Back to Index</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

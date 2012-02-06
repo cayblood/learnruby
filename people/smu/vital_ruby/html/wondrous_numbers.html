@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>LAB 1: Wondrous Numbers</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn how to create a stand-alone Ruby script.</li>
+<li>Learn how to write simple methods/functions.</li>
+</ul>
+
+
+<h2>Discussion</h2>
+
+<p>Consider the following rule for a number n:</p>
+
+<ul>
+<li>If n is even, then divide it by 2.</li>
+<li>If n is odd, then multiply it by 3 and add 1.</li>
+</ul>
+
+
+<p>By repeating the rule over and over, you can generate a sequence of
+numbers using the given rule.  Stop if the sequence reaches 1.</p>
+
+<p>For example, starting with 5:</p>
+
+<pre><code>5, 16, 8, 4, 2, 1
+</code></pre>
+
+<p>Another example, staring with 7:</p>
+
+<pre><code>7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1
+</code></pre>
+
+<p>Wondrous numbers will generate a sequence that eventually ends with 1.</p>
+
+<h2>Lab</h2>
+
+<p>For this assignment,</p>
+
+<ol>
+<li><p>Write a function wondrous?(n) that takes a positive integer n and
+returns true if the number is wondrous, and false if it is
+not-wondrous.</p></li>
+<li><p>Write some top level code that reads a number from standard input,
+calls wondrous?(n) and displays the results.</p></li>
+</ol>
+
+
+<h4>Hint -- Specs for Wondrous Numbers (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>require 'wondrous'
+
+describe "Wondrous Numbers" do
+  describe "#next_in_sequence" do
+    it "even numbers are divided by 2" do
+      next_in_sequence(4).should == 2
+      next_in_sequence(10).should == 5
+    end
+
+    it "odd numbers are tripled and incremented" do
+      next_in_sequence(5).should == 16
+      next_in_sequence(3).should == 10
+    end
+  end
+
+  describe "#wondrous?" do
+    it "is true" do
+      wondrous?(5).should be_true
+      wondrous?(123).should be_true
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hint -- Source for the <code>next_in_sequence?</code> method (click to view)</h4>
+
+<div class="solution">
+
+<p>The spec concentrates on the <code>next_in_sequence</code> method,
+because that's where most of the logic goes.</p>
+
+<pre><code>def next_in_sequence(n)
+  if (n%2) == 0
+    n/2
+  else
+    n*3 + 1
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hint -- Source for the <code>wondrous?</code> method (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>def wondrous?(n)
+  while n != 1
+    n = next_in_sequence(n)
+  end
+  true
+end
+</code></pre>
+
+</div>
+
+<h4>Hint -- Source for Wondrous Number Main Program (click to view)</h4>
+
+<div class="solution">
+
+<p>Here's the main program for the wondrous number lab.</p>
+
+<pre><code>  puts "Enter a number:"
+  number = gets.to_i
+  if wondrous?(number)
+    puts "#{number} is wondrous"
+  else
+    puts "#{number} is not wondrous"
+  end
+</code></pre>
+
+</div>
+
+<hr>
+
+
+<p><a href="index.html">Back to Index</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+
