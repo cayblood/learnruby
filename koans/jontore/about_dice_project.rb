@@ -2,9 +2,15 @@ require File.expand_path(File.dirname(__FILE__) + '/edgecase')
 
 # Implement a DiceSet Class here:
 #
-# class DiceSet
-# r code ...
-# end
+class DiceSet
+    def roll(n)
+        @val = (1..n).map { Random.rand(6) + 1 }
+    end
+
+    def values
+        @val
+    end
+end
 
 class DiceSet
     def roll(n)
