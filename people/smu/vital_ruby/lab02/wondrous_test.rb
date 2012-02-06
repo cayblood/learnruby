@@ -33,5 +33,4 @@ class WondrousTest < Test::Unit::TestCase
     assert_equal 7, w.counter
   end
 
-
 end

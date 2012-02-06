@@ -23,7 +23,7 @@ class Wondrous
           wondrous num * 3 + 1, list
         end
       end
-
+      
       cache[num] = list
     end
   end
