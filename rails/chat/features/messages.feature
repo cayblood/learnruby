@@ -5,6 +5,6 @@ Feature: Post and view messages
   
   Scenario: Post a message to the chat window
     Given I am on the chat page
-    When I fill in "message" with "Hello everybody"
-    And I click "Send"
+    When I fill in "message_content" with "Hello everybody"
+    And I click "Create Message"
     Then I should see "Hello everybody" in the message list

@@ -13,19 +13,50 @@
 # and
 #   about_triangle_project_2.rb
 #
+class Triangle
+	attr_accessor :a, :b, :c
+
+	def initialize(a, b, c)
+		@a, @b, @c = [a, b, c]
+		raise TriangleError unless valid?
+	end
+
+	def equilateral?
+		a == b && b == c
+	end
+
+	def isosceles?
+		(a == b || b == c || a == c) && !equilateral?
+	end
+
+	def scalene?
+		!equilateral? && !isosceles?
+	end
+
+	def positive_lengths?
+		a > 0 && b > 0 && c > 0
+	end
+
+	def valid_lengths?
+		sides = [a, b, c]
+		sides.sort!
+		sides[0] + sides[1] > sides[2]
+	end
+
+	def valid?
+		positive_lengths? && valid_lengths?
+	end
+
+	def greek_name
+		[:equilateral, :isosceles, :scalene].each do |t|
+			return t if send("#{t}?".to_sym)
+		end
+	end
+end
+
 def triangle(a, b, c)
-	if (a == b && b == c && a == 0) ||
-	   (a < 0 || b < 0 || c < 0) ||
-	   (a + b <= c || a + c <= b || b + c <= a)
-		raise TriangleError
-	end
-	if a == b && b == c
-		return :equilateral 
-	elsif a == b || b == c || a == c
-		return :isosceles
-	else
-		return :scalene
-	end
+	t = Triangle.new(a, b, c)
+	t.greek_name
 end
 
 # Error class used in part 2.  No need to change this code.

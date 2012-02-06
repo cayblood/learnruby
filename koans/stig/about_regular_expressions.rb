@@ -55,8 +55,8 @@ class AboutRegularExpressions < EdgeCase::Koan
   end
 
   def test_slash_d_is_a_shortcut_for_a_digit_character_class
-    assert_equal __, "the number is 42"[/[0123456789]+/]
-    assert_equal __, "the number is 42"[/\d+/]
+    assert_equal "42", "the number is 42"[/[0123456789]+/]
+    assert_equal "42", "the number is 42"[/\d+/]
   end
 
   def test_character_classes_can_include_ranges
