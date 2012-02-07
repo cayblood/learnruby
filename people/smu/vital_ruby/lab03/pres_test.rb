@@ -18,7 +18,6 @@ class PresTest < Test::Unit::TestCase
     end
   end
 
-
   def test_illegal_value_more_than
     p = Pres.new("How To Program in Ruby", "Ruby Hacker")
     assert_raise StandardError do

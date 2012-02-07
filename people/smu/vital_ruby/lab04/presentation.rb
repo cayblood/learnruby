@@ -1,12 +1,10 @@
-class Pres
+class Presentation
 
-  attr_accessor :what, :who, :cat, :scores
+  attr_accessor :topic, :author, :scores
 
-  def initialize what, who, cat = "?"
-    @what = what
-    @who = who
-    @cat = cat
-
+  def initialize topic, author
+    @topic = topic
+    @author = author
     @scores = []
   end
 
