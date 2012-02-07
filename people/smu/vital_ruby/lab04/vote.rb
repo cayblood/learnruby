@@ -13,14 +13,14 @@ class Vote
   end
   
   def read_presentations
-    File.open("presentations.txt").each do |line|
+    open("presentations.txt").each do |line|
       num, title, author = line.split(/:/)
       @presentations[num.to_i] = Presentation.new title, author
     end
   end
 
   def read_votes
-    File.open("votes.txt").each do |line|
+    open("votes.txt").each do |line|
       @votes << (num, vote = line.split.collect{ |e| e.to_i })
       @presentations[num].add_score(vote)
     end

@@ -1,9 +1,9 @@
 class Presentation
 
-  attr_accessor :topic, :author, :scores
+  attr_accessor :title, :author, :scores
 
-  def initialize topic, author
-    @topic = topic
+  def initialize title, author
+    @title = title
     @author = author
     @scores = []
   end
