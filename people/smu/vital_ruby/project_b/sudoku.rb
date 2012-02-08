@@ -29,12 +29,22 @@ class Board
     get_col(col_offset).sort.join.eql? "123456789"
   end
   
+  def get_box_offset(box_index)
+    o = box_index * 3
+    if box_index > 5
+      o += 9 * 4
+    elsif box_index > 2
+      o += 9 * 2
+    end
+    o
+  end
+  
   def get_box(box_index)
-    [0,1,2,9,10,11,18,19,20].map{|offset| @board[offset + (box_index * 3) + ()]}
+    [0,1,2,9,10,11,18,19,20].map{|offset| @board[offset + (get_box_offset box_index) ]}
   end
   
   def is_box_valid?(box_index)
-    true
+    get_box(box_index).sort.join.eql? "123456789"
   end
   
 end
@@ -70,6 +80,7 @@ describe Board do
     b = Board.new("puzzles/solved.sud")  
     b.get_box(1).should eq("618924537".chars.to_a)
     b.get_box(3).should eq("569142837".chars.to_a)
+    b.get_box(8).should eq("926143578".chars.to_a)
   end
 
   it "it should validate that boxes are valid" do
