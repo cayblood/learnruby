@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Advanced Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>Rake Lab</h1>
+
+<h2>Goal</h2>
+
+<ul>
+<li>Learn the difference between task and file targets.</li>
+<li>Learn about file lists</li>
+</ul>
+
+
+<h2>Lab</h2>
+
+<p>You have documentation for your project contained in a "docs"
+directory.  The documents are written in "markdown" (a common plain
+text markup language).  You wish to convert these files into a set of
+HTML documents that can be read in a standard browser.</p>
+
+<p>You can convert markdown document to HTML easily enough with the
+BlueCloth gem.  The following snippet of code will read a markdown
+file and write an html file.</p>
+
+<pre><code>content = open("doc.md") { |f| f.read }
+html = BlueCloth.new(content).to_html
+open("doc.html", "w") { |f| f.write(html) }
+</code></pre>
+
+<h3>Part 1: Convert a Single File</h3>
+
+<p>Write a file task that creates "html/index.html" from the source file
+in "docs/index.md".</p>
+
+<h4>Solution: (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>file "html/index.html" =&gt; "docs/index.md" do |t|
+  source = t.name.pathmap("docs/%n.md")
+  content = open(source) { |f| f.read }
+  html = BlueCloth.new(content).to_html
+  open(t.name, "w") { |f| f.write(html) }
+end
+</code></pre>
+
+</div>
+
+<h3>Part 2: Convert Multiple Files</h3>
+
+<p>Writing a conversion task for each markdown file will quickly get
+tedious. Use a FileList and a loop to write all the tasks at once.</p>
+
+<p>It may help to know that you can easily get the name of the HTML file
+from the doc file with a rake pathmap expression.</p>
+
+<pre><code>"doc/index.md".pathmap("html/%n.html")  # =&gt; "html/index.html"
+</code></pre>
+
+<h4>Solution: (click to view)</h4>
+
+<div class="solution">
+
+<p>The key is to create a file list of document files that can</p>
+
+<pre><code>DOC_FILES = FileList['docs/*.md']
+
+directory "html"
+
+DOC_FILES.each do |doc_file|
+  html_file = doc_file.pathmap("html/%n.html")
+  desc "Build the HTML file #{html_file}"
+  file html_file =&gt; ["html", doc_file] do
+    content = open(doc_file) { |f| f.read }
+    html = BlueCloth.new(content).to_html
+    open(html_file, "w") { |f| f.write(html) }
+  end
+end
+</code></pre>
+
+</div>
+
+<h3>Part 3: Add a convenience task (docs) and default task</h3>
+
+<p>Create a single task named :docs the will build all the HTML files.
+Also create a task named :default that will also build the
+documentation (the :default task is run whenever rake is invoked
+without an explicit task).</p>
+
+<h4>Solution: (click to view)</h4>
+
+<div class="solution">
+
+<p>Create a file list derived from the list of document files from step
+2.  Then make a :docs task depend on the HTML files.  Whenever the
+docs task is invoked, rake will build the HTML files as dependencies.</p>
+
+<pre><code># Using DOC_FILES defined in step 2...
+
+HTML_FILES = DOC_FILES.pathmap("html/%n.html")
+
+desc "Default is to create the docs"
+task :default =&gt; :docs
+
+desc "Create the documents"
+task :docs =&gt; HTML_FILES
+</code></pre>
+
+</div>
+
+<h3>Full Solution</h3>
+
+<p>Parts 2 &amp; 3 combined:</p>
+
+<h4>Solution: (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>require 'rake/clean'
+require 'bluecloth'
+
+CLOBBER.include("html")
+
+DOC_FILES = FileList['docs/*.md']
+
+directory "html"
+
+DOC_FILES.each do |doc_file|
+  html_file = doc_file.pathmap("html/%n.html")
+  desc "Build the HTML file #{html_file}"
+  file html_file =&gt; ["html", doc_file] do
+    content = open(doc_file) { |f| f.read }
+    html = BlueCloth.new(content).to_html
+    open(html_file, "w") { |f| f.write(html) }
+  end
+end
+
+# Using DOC_FILES defined in step 2...
+
+HTML_FILES = DOC_FILES.pathmap("html/%n.html")
+
+desc "Default is to create the docs"
+task :default =&gt; :docs
+
+desc "Create the documents"
+task :docs =&gt; HTML_FILES
+</code></pre>
+
+</div>
+
+<hr>
+
+
+<p><a href="index.html">back</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

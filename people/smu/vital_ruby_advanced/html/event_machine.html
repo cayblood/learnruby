@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Advanced Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>Event Machine Lab</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn about event driven programming.</li>
+<li>Learn how to increase overall performance without threading.</li>
+</ul>
+
+
+<h2>Lab</h2>
+
+<p>Our current version of check-link is throttled by a fetch/parse loop.
+A fetch of a web-page can take a long time, during which the
+check-links script cannot do another other work.</p>
+
+<p>There are several ways to solve this.  In this lab we will using event
+machine to allow us to issue HTTP requests in parallel and really
+speed up the program.</p>
+
+<h3>Step 1 -- Prepare for Callback Oriented Programming</h3>
+
+<p>Event driven code has a heavy emphasis on callbacks. Our current
+fetch/parse loop it too tightly coupled to ease in callbacks without
+some changes.</p>
+
+<p>Our main loop looks something like this (greatly simplified):</p>
+
+<pre><code>while ! unchecked_urls.empty?
+  url = unchecked_urls.shift
+  body = fetch(url)
+  parse(body)
+end
+</code></pre>
+
+<p>The code hardcodes the interleaving of fetching and parsing.  For
+every fetch, there is a parse operation.  The next fetch cannot be
+started until the current cycle is done.</p>
+
+<p>Event driven callback style programming breaks this hard coded
+interleaving by introducing a callback.  This style would write the
+loop as this:</p>
+
+<pre><code>while ! unchecked_urls.empty?
+  url = unchecked_urls.shift
+  fetch(url) do |body|
+    parse(body)
+  end
+end
+</code></pre>
+
+<p>Essentially the code that executes after the fetch is moved into a
+block that will get called whenever the fetch is done and ready to
+hand-off the body to the parser.</p>
+
+<p>Your first step to using event driven program is to convert your
+UrlFetcher to using a callback, and modify the LinkChecker class to
+call it appropriately.</p>
+
+<h4>Hint - Source for run method</h4>
+
+<div class="solution">
+
+<p>Here is the link fetcher class written in callback style.</p>
+
+<pre><code>module CheckLinks
+  class UrlFetcher
+    def fetch(url, &amp;block)
+      body = open(url) { |f| f.read }
+      block.call(body)
+    rescue StandardError =&gt; ex
+      block.call(nil)
+    end
+  end
+end
+</code></pre>
+
+<p>And here is the run method using the callback style fetcher.</p>
+
+<pre><code>def run
+  while ! @unchecked_urls.empty?
+    url = @unchecked_urls.pop
+    next if seen?(url)
+    mark_seen(url)
+    @fetcher.fetch(url) do |body|
+      if body.nil?
+        @bad_urls &lt;&lt; url
+      else
+        @good_urls &lt;&lt; url
+        if has_prefix?(url)
+          new_urls = parse(url, body)
+          add_urls(new_urls)
+        end
+      end
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h3>Step 2 -- A EventMachine Friendly URL Fetcher</h3>
+
+<p>Our current URL fetcher will block while waiting on a URL.  We need to
+use an EventMachine friendly version, and the em-http-request gem is
+just what we need.  Add the following lines to your Gemfile and
+re-bundle.</p>
+
+<pre><code>gem 'eventmachine'
+gem 'em-http-request'
+</code></pre>
+
+<p>To make an HTTP request with this library, create an request object
+and call 'get' on it ...</p>
+
+<pre><code>http = EventMachine::HttpRequest.new("http://somewhere.com").get
+</code></pre>
+
+<p>Now add callbacks to the http object.  These callbacks specify what is
+to happen when the http request completes.</p>
+
+<pre><code>http.callback do
+  puts http.response_header.status
+  puts http.response
+end
+</code></pre>
+
+<p>If there is an error, an error callback will called instead of the
+normal callback.  Use the creatively named "errback" method to define
+the error callback.</p>
+
+<pre><code>http.errback do
+  puts "There was an error"
+end
+</code></pre>
+
+<p>One more thing.  The non-EventMachine version of the link checker
+terminated when the unchecked URLs list became empty.  Since we no
+longer have a unchecked URL list, we need another way to tell when we
+are done.  A simple thing to do is let the URL fetcher keep track of
+the number of outstanding fetch requests.</p>
+
+<p>Add a <code>busy?</code> method to the URL fetcher that is true
+whenever there are URL fetch requests that have not yet invoked their
+callbacks.</p>
+
+<p>A simple way to accomplish this is to keep an outstanding_request
+counter that is incremented every time a fetch is initiated and is
+decremented in both the successful and error callbacks.  The method
+<code>busy?</code> should return true if the outstanding request
+counter is greater than zero.</p>
+
+<p>So, to summarize step 2, create a new class called EmFetcher that uses
+the em-http-library to fetch URLs.  Add a <code>busy?</code> method
+that is true whenever there are outstanding fetch requests.</p>
+
+<h4>Hint -- Demonstration of em-http-request</h4>
+
+<div class="solution">
+
+<p>Here is a quick standalone program that uses the em-http-request
+library with EventMachine.</p>
+
+<pre><code>require 'eventmachine'
+require 'em-http'
+
+EventMachine.run {
+  http = EventMachine::HttpRequest.new('http://onestepback.org/articles/depinj/index.html').get
+
+  http.errback { p 'Uh oh'; EM.stop }
+  http.callback {
+    p http.response_header.status
+    p http.response_header
+    p http.response
+
+    EventMachine.stop
+  }
+}
+</code></pre>
+
+</div>
+
+<h4>Hint -- Code for EmFetcher</h4>
+
+<div class="solution">
+
+<pre><code>require 'eventmachine'
+require 'em-http'
+
+module CheckLinks
+  class EmFetcher
+    def initialize(timeout=30)
+      @outstanding = 0
+      @timeout = timeout
+    end
+
+    def fetch(url, &amp;block)
+      @outstanding += 1
+
+      http = EventMachine::HttpRequest.new(url).get(timeout: @timeout, redirects: 1)
+      http.errback do
+        @outstanding -= 1
+        block.call(nil)
+      end
+
+      http.callback do
+        @outstanding -= 1
+        if http.response_header.status == 200
+          block.call(http.response)
+        else
+          block.call(nil)
+        end
+      end
+    end
+
+    def busy?
+      @outstanding &gt; 0
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h3>Step 2 -- Add Event Machine Infrastructure</h3>
+
+<p>Now we are ready to actually add EventMachine into our main code
+base. You will want to make the following changes.</p>
+
+<ol>
+<li><p>Modify the main script to use the EmFetcher class rather than the
+non-EventMachine UrlFetcher version.</p></li>
+<li><p>Add require 'eventmachine' to the LinkChecker file.</p></li>
+<li><p>Remove the explicit while loop from the LinkChecker module and
+depend on the callbacks to keep the URLs coming.</p></li>
+<li><p>At the end of the callback, make sure you check
+<code>fetcher.busy?</code> and terminate the event loop whenever
+the fetcher is not busy.</p></li>
+<li><p>Add <code>EventMachine.run { ... }</code> around the code that does
+the link checking.</p>
+
+<p>You can choose to add it in the main script, or in the LinkChecker
+class.  We chose to add it to LinkChecker.</p>
+
+<p><strong>BONUS QUESTION:</strong>
+*Discuss the advantages and disadvanges of the event run loop in
+the main script VS just the LinkChecker).</p></li>
+</ol>
+
+
+<h4>Hint -- The Run Loop</h4>
+
+<div class="solution">
+
+<p>We choose to put the event run loop in the LinkChecker in the check
+method, but only around the check_url method (where all the action
+happens).</p>
+
+<pre><code>    def check(url, prefix=nil)
+      prefix ||= url
+      @prefix = Regexp.new("^" + Regexp.quote(prefix))
+      EventMachine.run do
+        check_url(url)
+      end
+    end
+</code></pre>
+
+</div>
+
+<h4>Hint -- Checking a URL</h4>
+
+<div class="solution">
+
+<p>The guts of checking a url now happen in the <code>check_url</code>
+method.  A</p>
+
+<p>We choose to put the event run loop in the LinkChecker in the check
+method, but only around the check_url method (where all the action
+happens).</p>
+
+<pre><code>    def check_url(url)
+      return if seen?(url)
+      mark_seen(url)
+      @fetcher.fetch(url) do |body|
+        if body.nil?
+          @bad_urls &lt;&lt; url
+        else
+          @good_urls &lt;&lt; url
+          if has_prefix?(url)
+            new_urls = @parser.parse(url, body)
+            check_urls(new_urls)
+          end
+        end
+        EventMachine.stop unless @fetcher.busy?
+      end
+    end
+</code></pre>
+
+</div>
+
+<h4>Hint -- The Complete Solution</h4>
+
+<div class="solution">
+
+<p>Here are all the classes and the main script for the final solution</p>
+
+<p><strong>bin/check-links</strong></p>
+
+<pre><code>#!/usr/bin/env ruby
+
+require 'optparse'
+require 'check_links'
+
+class LogWrapper
+  def initialize(method, obj)
+    @method = method
+    @obj = obj
+
+    self.class.send(:define_method, method) do |*args, &amp;block|
+      puts "#{method}: #{args.first}"
+      obj.send(method, *args, &amp;block)
+    end
+  end
+
+  def method_missing(sym, *args, &amp;block)
+    @obj.send(sym, *args, &amp;block)
+  end
+end
+
+def handle_options(args)
+  options = {
+    logging: 0
+  }
+
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: example.rb [options]"
+
+    opts.on("-p", "--prefix=PREFIX", "Establish a site prefix") do |v|
+      options[:prefix] = v
+    end
+
+    opts.on("-l", "--logging=LEVEL", "Log level (1=fetching, 2=fetch &amp; parse)") do |v|
+      options[:logging] = v.to_i
+    end
+
+    opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+      options[:verbose] = v
+    end
+
+    opts.on("-V", "--version", "Version") do |v|
+      puts "Version 1.0"
+      exit
+    end
+  end
+  parser.parse!(args)
+  options
+end
+
+def main(args)
+  options = handle_options(args)
+
+  urls = ARGV.dup
+
+  fetcher = CheckLinks::EmFetcher.new
+  fetcher = LogWrapper.new(:fetch, fetcher) if options[:logging] &gt; 0
+
+  parser  = CheckLinks::HtmlParser.new
+  parser  = LogWrapper.new(:parse, parser) if options[:logging] &gt; 1
+
+  link_checker = CheckLinks::LinkChecker.new(fetcher: fetcher, parser: parser)
+  link_checker.check(urls.first, options[:prefix])
+
+  if link_checker.bad_urls.empty?
+    puts "No bad URLs"
+  else
+    puts "#{link_checker.bad_urls.size} Bad URLs:"
+    link_checker.bad_urls.each do |url|
+      puts url
+    end
+  end
+end
+
+main(ARGV) if $0 == __FILE__
+</code></pre>
+
+<p><strong>lib/check_links/link_checker.rb</strong></p>
+
+<pre><code>require 'eventmachine'
+
+module CheckLinks
+  class LinkChecker
+    attr_reader :good_urls, :bad_urls
+
+    def initialize(options={})
+      @fetcher = options[:fetcher] || CheckLinks::UrlFetcher.new
+      @parser  = options[:parser]  || CheckLinks::HtmlParser.new
+      @good_urls = []
+      @bad_urls = []
+      @seen = {}
+      @prefix = nil
+    end
+
+    def check(url, prefix=nil)
+      prefix ||= url
+      @prefix = Regexp.new("^" + Regexp.quote(prefix))
+      EventMachine.run do
+        check_url(url)
+      end
+    end
+
+    private
+
+    def check_url(url)
+      return if seen?(url)
+      mark_seen(url)
+      @fetcher.fetch(url) do |body|
+        if body.nil?
+          @bad_urls &lt;&lt; url
+        else
+          @good_urls &lt;&lt; url
+          if has_prefix?(url)
+            new_urls = @parser.parse(url, body)
+            check_urls(new_urls)
+          end
+        end
+        EventMachine.stop unless @fetcher.busy?
+      end
+    end
+
+    def check_urls(urls)
+      urls.each do |url| check_url(url) end
+    end
+
+    def has_prefix?(url)
+      @prefix &amp;&amp; @prefix.match(url)
+    end
+
+    def seen?(url)
+      @seen[url]
+    end
+
+    def mark_seen(url)
+      @seen[url] = true
+    end
+  end
+end
+</code></pre>
+
+<p><strong>lib/check_links/em_fetcher.rb</strong></p>
+
+<pre><code>require 'eventmachine'
+require 'em-http'
+
+module CheckLinks
+  class EmFetcher
+    def initialize(timeout=30)
+      @outstanding = 0
+      @timeout = timeout
+    end
+
+    def fetch(url, &amp;block)
+      @outstanding += 1
+
+      http = EventMachine::HttpRequest.new(url).get(timeout: @timeout, redirects: 1)
+      http.errback do
+        @outstanding -= 1
+        block.call(nil)
+      end
+
+      http.callback do
+        @outstanding -= 1
+        if http.response_header.status == 200
+          block.call(http.response)
+        else
+          block.call(nil)
+        end
+      end
+    end
+
+    def busy?
+      @outstanding &gt; 0
+    end
+  end
+end
+</code></pre>
+
+<p><strong>lib/check_links/html_parser.rb</strong></p>
+
+<pre><code>require 'nokogiri'
+
+module CheckLinks
+  class HtmlParser
+    def parse(source_url, body)
+      doc = Nokogiri::HTML(body)
+      urls = doc.css('a').map { |node|
+        att = node.attribute("href")
+        att ? att.text : nil }
+      normalize(source_url, urls.compact)
+    end
+
+    private
+
+    def normalize(source_url, urls)
+      urls.map { |u| normalize_url(source_url, u) }.compact
+    end
+
+    def normalize_url(source_url, url)
+      return nil if url =~ /^#/
+      URI.parse(source_url).merge(URI.parse(url)).to_s
+    rescue StandardError =&gt; ex
+      nil
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<hr>
+
+
+<p><a href="index.html">back</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

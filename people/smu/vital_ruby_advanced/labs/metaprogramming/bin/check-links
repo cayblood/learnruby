@@ -1,0 +1,71 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'check_links'
+
+# %+ wrapper
+class LogWrapper
+  def initialize(method, obj)
+    @obj = obj
+
+    self.class.send(:define_method, method) do |*args|
+      puts "#{method}: #{args.first}"
+      obj.send(method, *args)
+    end
+  end
+end
+# %-
+
+def handle_options(args)
+# %+ opts1
+  options = {
+    logging: 0
+  }
+# %-
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: check-links [options] url_to_check"
+
+    opts.on("-p", "--prefix=PREFIX", "Establish a site prefix") do |v|
+      options[:prefix] = v
+    end
+
+# %+ opts2
+    opts.on("-l", "--logging=LEVEL", "Log level (1=fetching, 2=fetch & parse)") do |v|
+      options[:logging] = v.to_i
+    end
+# %-
+
+    opts.on("-v", "--version", "Version") do |v|
+      puts "Version 1.0"
+      exit
+    end
+  end
+  parser.parse!(args)
+  options
+end
+
+def main(args)
+  options = handle_options(args)
+
+# %+ wrapping
+  fetcher = CheckLinks::UrlFetcher.new
+  fetcher = LogWrapper.new(:fetch, fetcher) if options[:logging] > 0
+
+  parser  = CheckLinks::HtmlParser.new
+  parser  = LogWrapper.new(:parse, parser) if options[:logging] > 1
+# %-
+
+  link_checker = CheckLinks::LinkChecker.new(fetcher: fetcher, parser: parser)
+  link_checker.check(ARGV.first, options[:prefix])
+
+  if link_checker.bad_urls.empty?
+    puts "No bad URLs"
+  else
+    puts "#{link_checker.bad_urls.size} Bad URLs:"
+    link_checker.bad_urls.each do |url|
+      puts url
+    end
+  end
+end
+
+main(ARGV) if $0 == __FILE__

@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+# %+ opts
+require 'optparse'
+# %-
+require 'check_links'
+
+# %+ opts
+
+def handle_options(args)
+  options = {
+    logging: 0
+  }
+
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: check-links [options] url_to_check"
+
+    opts.on("-p", "--prefix=PREFIX", "Establish a site prefix") do |v|
+      options[:prefix] = v
+    end
+
+    opts.on("-v", "--version", "Version") do |v|
+      puts "Version 1.0"
+      exit
+    end
+  end
+  parser.parse!(args)
+  options
+end
+# %-
+
+# %+ main
+def main(args)
+  options = handle_options(args)
+
+  link_checker = CheckLinks::LinkChecker.new
+  link_checker.check(ARGV.first, options[:prefix])
+
+  if link_checker.bad_urls.empty?
+    puts "No bad URLs"
+  else
+    puts "#{link_checker.bad_urls.size} Bad URLs:"
+    link_checker.bad_urls.each do |url|
+      puts url
+    end
+  end
+end
+
+main(ARGV) if $0 == __FILE__
+# %-
