@@ -1,0 +1,9 @@
+require "bluecloth"
+
+task "default" do
+  file = open("docs/index.md") { |f| f.read }
+  html = BlueCloth.new(file).to_html
+  open("index.html", "w") { |f| f.write(html) }
+  
+  FileList["docs/*.md"].each { |f| puts f  }
+end

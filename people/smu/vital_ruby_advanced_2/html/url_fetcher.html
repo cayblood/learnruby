@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Advanced Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>Fetching Web Pages</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn how to fetch web pages using open-uri</li>
+</ul>
+
+
+<h2>Lab</h2>
+
+<p>Write a class named UrlFetcher.  It has a single method named "fetch"
+that takes a URL and returns the web page corresponding to the URL. If
+an error occurs, or if the web page is not available, fetch should
+return nil.</p>
+
+<p>The easiest way to fetch web pages in Ruby is to use the <a href="http://www.ruby-doc.org/stdlib-1.9.3/libdoc/open-uri/rdoc/OpenURI.html">Open
+URI</a>
+library that allows you to open web pages as if they were files.</p>
+
+<p>Here's the outline:</p>
+
+<pre><code>class UrlFetcher
+  def fetch(url)
+    # Write this code
+  end
+end
+</code></pre>
+
+<h4>Hint: open-uri (click to view)</h4>
+
+<div class="solution">
+
+<p>Open-URI allows you to open URLs as if they were files.  Use the block
+form of open to read the string and return the result.</p>
+
+<pre><code>html = open(url) { |stream| stream.read }
+</code></pre>
+
+</div>
+
+<h4>Hint: Specification (click to view)</h4>
+
+<div class="solution">
+
+<pre><code># gem install rspec-given
+
+require 'rspec/given'
+require './url_fetcher'
+
+
+describe UrlFetcher do
+  Given(:fetcher) { UrlFetcher.new }
+
+  context "with good url" do
+    Then { fetcher.fetch("http://onestepback.org").should =~ /&lt;html/i }
+  end
+
+  context "with bad url path" do
+    Then { fetcher.fetch("http://onestepback.org/this_path_does_not_exist").should be_nil }
+  end
+
+  context "with bad url host" do
+    Then { fetcher.fetch("http://this_host_does_not_exist.com/").should be_nil }
+  end
+
+  context "with an ill-formed url" do
+    Then { fetcher.fetch("http://no_dot_com").should be_nil }
+  end
+
+  context "with an ill-formed protocol" do
+    Then { fetcher.fetch("bad_protocol://onestepback.org").should be_nil }
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Solution: (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>require 'open-uri'
+
+class UrlFetcher
+  def fetch(url)
+    open(url) { |f| f.read }
+  rescue StandardError =&gt; ex
+    nil
+  end
+end
+</code></pre>
+
+</div>
+
+<hr>
+
+
+<p><a href="index.html">back</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

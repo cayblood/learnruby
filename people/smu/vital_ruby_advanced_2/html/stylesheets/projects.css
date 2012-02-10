@@ -1,0 +1,172 @@
+body {
+    font-family: Helvetica, sans-serif;
+    background-color: #fefefe;
+    padding: 0;
+    margin: 0;
+    background-color: #ccc;
+}
+
+body h1 {
+    text-align: center;
+    margin: 0;
+    padding: 10px 0 10px 0;
+    color: white;
+    font-weight: normal;
+    font-size: 48px;
+    background-color: #333;
+}
+
+#content {
+    width: 80%;
+    min-height: 800px;
+    margin: 0 auto 20px auto;
+    background-color: #fff;
+    padding: 6px 20px 6px 20px;
+}
+
+#content pre {
+    border: green 2px solid;
+    background: black;
+    color: LightGreen;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+#content h3 {
+    background: #eee;
+    padding: 3px;
+}
+
+#content h4 {
+    color: blue;
+}
+
+#content h4:hover {
+    text-decoration: underline;
+}
+
+ul#project-names {
+    list-style-type: none;
+    width: 100%;
+    text-align: center;
+    margin: 0;
+    padding: 6px 0 0 0;
+    letter-spacing: -5px;
+}
+
+ul#project-names li {
+    list-style: none;
+    display: inline;
+    padding: 6px 8px;
+    margin: 0;
+    background-color: #333;
+    letter-spacing: normal;
+}
+
+ul#project-names li:first-child {
+    -moz-border-radius-bottomleft: 6px;
+    -webkit-border-bottom-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+ul#project-names li:last-child {
+    -moz-border-radius-bottomright: 6px;
+    -webkit-border-bottom-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+ul#project-names li a {
+    color: white;
+    text-decoration: none;
+}
+
+ul#project-names li a:focus {
+    outline: 0px;
+}
+
+ul#project-names li:hover {
+    background-color: #888;
+}
+
+ul#project-names li.selected:hover {
+    background-color: #333;
+}
+
+ul#project-names li.selected a {
+    cursor: default;
+    color: #888;
+}
+
+.description {
+    padding: 20px 40px 20px 40px;
+    display: none;
+}
+
+.description h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.description a {
+    color: #444;
+    font-weight: bold;
+}
+
+.description p.notice {
+    text-align: center;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.description a:visited {
+    color: #222;
+    font-weight: normal;
+}
+
+.description table {
+    width: 48%;
+    border: solid 1px black ;
+    text-align: center;
+}
+
+.description table thead {
+    line-height: 1.5em;
+    font-weight: bold;
+    color: white;
+    background-color: black;
+}
+
+.description table tbody td {
+    border-bottom: solid 1px black ;
+    padding: 2px;
+}
+
+.description pre {
+    margin: 16px 40px 16px 40px;
+    padding: 10px 0 10px 0;
+    background-color: #eda;
+}
+
+.description dt {
+    font-family: Menlo, monospace;
+    margin: 12px 0 12px 0;
+}
+
+.description dd {
+    font-size: 0.95em;
+}
+
+.description#sudoku-solver img#sudoku-sample {
+    float: right;
+    width:  250px;
+    height: 250px;
+    margin: 20px 20px 20px 20px;
+}
+
+span.symbol, span.code {
+    background: red;
+    font-family: Menlo, monospace;
+}
+

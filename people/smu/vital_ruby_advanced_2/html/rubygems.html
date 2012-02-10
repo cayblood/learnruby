@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Advanced Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>RubyGems Lab</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn how to package your project as a gem</li>
+<li>Learn how to install your gem from a file</li>
+</ul>
+
+
+<h2>Create a Gem from the project</h2>
+
+<p>We have created our project for checking links. We now want to distribute it for our friends to use and so that we can install it on other machines.</p>
+
+<h3>Step 1</h3>
+
+<p>Take the last lab you did (<a href="meta_programming.html">Meta-Programming</a>) and create a gem out of it. You will need to create your .gemspec file. Make sure your directories are setup correctly and create the gem.</p>
+
+<p>You can use this as your blank .gemspec file. Make sure you include your files. Hint: use a File</p>
+
+<pre><code>require 'rake' 
+
+PKG_FILES = "Where are my files?"
+
+CURRENT_VERSION = ''
+
+Gem::Specification.new do |s|
+  s.name              = ""
+  s.version           = 
+  s.date              = Time.now.strftime('%Y-%m-%d')
+  s.summary           = ""
+  s.homepage          = ""
+  s.email             = ""
+  s.authors           = [ "" ]
+  s.has_rdoc          = false
+
+  s.files             = "Where are my files?"
+
+  s.add_dependency('any dependencies?')
+
+  s.executables       = ""
+
+  s.description       = &lt;&lt;desc
+  A much more elequent and long description of 
+  your project here. Tell me here why I should 
+  download and use _your_ gem
+desc
+end
+</code></pre>
+
+<h4>Hint - Source for run method</h4>
+
+<div class="solution">
+
+<pre><code>require 'rake'
+
+PKG_FILES = FileList[
+  'lib/**/*.rb',
+  'test/**/*.rb',
+    'Rakefile',
+    'Gemfile',
+    'bin/check-links'
+]
+
+CURRENT_VERSION = '0.1.0'
+
+Gem::Specification.new do |s|
+  s.name              = "check-links"
+  s.version           = CURRENT_VERSION
+  s.date              = Time.now.strftime('%Y-%m-%d')
+  s.summary           = "check-links is a link checker"
+  s.homepage          = "http://not-on-github-yet.com"
+  s.email             = "joe@edgecase.com"
+  s.authors           = [ "Jim Weirich", "Joe O'Brien" ]
+  s.has_rdoc          = false
+
+  s.files             = PKG_FILES
+
+  s.add_dependency('nokogiri')
+
+  s.executables       = %w( check-links )
+
+  s.description       = &lt;&lt;desc
+  A much more elequent and long description of the link 
+  checker and it's various features. Tell me here why I 
+  should download and use _your_ gem
+desc
+end
+</code></pre>
+
+</div>
+
+<h3>Step 2</h3>
+
+<p>Run the command to build the gem:</p>
+
+<pre><code>$ gem build check-links
+</code></pre>
+
+<p>Run the command to install the gem:</p>
+
+<pre><code>$ gem install check-links-0.1.0.gem 
+</code></pre>
+
+<p>Now test to ensure your binary works:</p>
+
+<pre><code>$ check-links -h
+</code></pre>
+
+<h4>Extra Information</h4>
+
+<p>Hints on Naming:
+* If it's a compound name use an underscore (example: 'url_fetcher)
+* If it is a plugin for another gem use a dash in the name and a slash in the require (example: 'rspec-given' name and 'require 'rspec/given' in the file)</p>
+
+<p><a href="index.html">Back</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Advanced Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>Link Checking Lab</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Build a complete and functional Ruby script</li>
+<li>Learn the canonical structure of a typical Ruby project</li>
+<li>Learn how to handle command line parsing.</li>
+</ul>
+
+
+<h2>Lab</h2>
+
+<h3>Part 1 -- Create a project structure</h3>
+
+<p>Create a directory called check_links to start your new Ruby project.
+Within that directory, create the following directory structure.  This
+is a typical Ruby structure.</p>
+
+<pre><code>check_links         -- Top level project directory
+  Rakefile          -- Project level makefile
+  Gemfile           -- Gem dependency specification
+  Gemfile.lock      -- Gem dependency lock down
+  lib               -- Directory for Ruby source
+  bin               -- Directory for command line scripts
+  spec              -- Directory for unit and other tests a
+</code></pre>
+
+<h4>Hint - Gemfile (click to view)</h4>
+
+<div class="solution">
+
+<p>Here is our Gemfile</p>
+
+<pre><code>source :rubygems
+
+gem 'nokogiri'
+gem 'eventmachine'
+
+group :test do
+  gem 'rspec'
+  gem 'rspec-given'
+end
+</code></pre>
+
+</div>
+
+<h4>Hint - Rakefile (click to view)</h4>
+
+<div class="solution">
+
+<p>Here is our Rakefile</p>
+
+<pre><code>#!/usr/bin/env ruby"
+
+require 'rake/clean'
+require 'rake/testtask'
+
+task :default =&gt; :spec
+
+task :spec do
+  sh "rspec spec"
+end
+</code></pre>
+
+</div>
+
+<h3>Part 2 -- Import your pre-existing code</h3>
+
+<p>Now take the code from the HTML parsing labs and import it into the
+project.  Since it is good practice to use namespaces in projects that
+are likely to be shared, you should do the following for both the
+HtmlParser and the UrlFetcher:</p>
+
+<ul>
+<li>Move the source code into a subdirectory of lib.  The subdirectory
+will have the same name as the project.  This provides a namespace
+for the require commands.  Your project directory should look like
+this:</li>
+</ul>
+
+
+<pre>
+check_links
+  ...
+  lib
+    check_links
+      html_parser.rb
+      url_fetcher.rb
+  ...
+  spec
+    check_links
+      html_parser_spec.rb
+      url_fetcher_spec.rb
+</pre>
+
+
+<ul>
+<li>Nest the Ruby classes within a module named CheckLinks.  This
+provides a namespace for the Ruby source code.  The code should look
+like this:</li>
+</ul>
+
+
+<pre>
+module CheckLinks
+  class UrlFetcher
+    ...
+  end
+end
+</pre>
+
+
+<h4>Hint - Source for HtmlParser (click to view)</h4>
+
+<div class="solution">
+
+<p>If you don't have a working HtmlParser class, you can use ours:</p>
+
+<pre><code>require 'nokogiri'
+
+module CheckLinks
+  class HtmlParser
+    def parse(source_url, body)
+      doc = Nokogiri::HTML(body)
+      urls = doc.css('a').map { |node|
+        att = node.attribute("href")
+        att ? att.text : nil }
+      normalize(source_url, urls.compact)
+    end
+
+    private
+
+    def normalize(source_url, urls)
+      urls.map { |u| normalize_url(source_url, u) }.compact
+    end
+
+    def normalize_url(source_url, url)
+      return nil if url =~ /^#/
+      URI.parse(source_url).merge(URI.parse(url)).to_s
+    rescue StandardError =&gt; ex
+      nil
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hint - Source for UrlFetcher (click to view)</h4>
+
+<div class="solution">
+
+<p>If you don't have a working UrlFetcher class, you can use ours:</p>
+
+<pre><code>require 'open-uri'
+
+module CheckLinks
+  class UrlFetcher
+    def fetch(url)
+      open(url) { |f| f.read }
+    rescue StandardError =&gt; ex
+      nil
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h3>Part 3 -- Write a link checking class</h3>
+
+<p>Here's the meat of the lab.  Write a new class called LinkChecker that
+uses UrlFetcher and HtmlParser that checks all the links on a web site
+to make sure they are still valid.</p>
+
+<p>The use case for LinkChecker should be something like this:</p>
+
+<pre><code>checker = LinkChecker.new
+checker.check(base_url, prefix)
+
+checker.good_urls   -- list of all the working URLs found
+checker.bad_urls    -- list of all urls that failed
+</code></pre>
+
+<p>Effectively this means that a LinkChecker checker object starts by
+fetching the first page of a web-site and extracts all the URLs from
+it.  It then fetches each of the URLs on that initial page and makes
+sure that each URL is a valid link.  If a fetched URL is also part of
+the web site, then any URLs on that page are also queued for
+checking.  The link checker continues to check URLs until the list of
+unchecked URLs is empty.</p>
+
+<p>You will also need to keep track of URLs that have already been
+checked, so that you don't download a link that has already been
+verified.</p>
+
+<h4>Hint - Pseudo-code for the Link checker</h4>
+
+<div class="solution">
+
+<p>Here is the basic algorithm written in more or less Ruby:</p>
+
+<pre><code>seen = {}
+good_urls = []
+bad_urls = []
+unchecked_urls = [initial_url]
+
+while ! unchecked_urls.empty?
+  url = unchecked_urls.shift
+  seen[url] = true
+  html = fetch(url)
+  if html.nil?
+    bad_urls &lt;&lt; url
+  else
+    good_urls &lt;&lt; url
+    if url starts with the prefix
+      new_urls = parse(html)
+      new_urls.each do |u|
+        unchecked_urls &lt;&lt; u unless seen[url]
+      end
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hint - Specification for LinkChecker</h4>
+
+<div class="solution">
+
+<p>We make testing the link checker very easy by using a FauxFetcher and
+FauxParser class.  This allows us to easily specify each page and what
+links it has without actually have fetch pages from the web.</p>
+
+<p>Here are the Faux classes for testing.</p>
+
+<pre><code>class FauxFetcher
+  def initialize(mapping)
+    @mapping = mapping
+  end
+
+  def fetch(url)
+    @mapping[url]
+  end
+end
+
+class FauxParser
+  def parse(source_url, body)
+    body
+  end
+end
+</code></pre>
+
+<p>It is also helpful to use a matcher for nice error messages when
+comparing lists of urls.  Here is the RSpec matcher we use.</p>
+
+<pre><code>module RSpec::Matchers
+  matcher :contain_urls do |*expected_urls|
+    match do |actual_urls|
+      actual_urls.sort == expected_urls.sort
+    end
+
+    failure_message_for_should do |actual_urls|
+      extra = diff(actual_urls, expected_urls)
+      missing = diff(expected_urls, actual_urls)
+      "URL lists do not match\n" +
+        "Expected: #{expected_urls.inspect}\n" +
+        "Got:      #{actual_urls.inspect}\n" +
+        "Missing:  #{missing.inspect}\n" +
+        "Extra:    #{extra.inspect}"
+    end
+
+    failure_message_for_should_not do |expected|
+      fail "should_not not implemented for contains_urls"
+    end
+  end
+
+  def diff(a,b)
+    b_counts = count(b)
+    count(a).map { |item, n|
+      c = n - b_counts[item]
+      c = 0 if c &lt; 0
+      [item] * c
+    }.flatten.sort
+  end
+
+  def count(ary)
+    result = Hash.new(0)
+    ary.each do |item|
+      result[item] += 1
+    end
+    result
+  end
+end
+</code></pre>
+
+<p>And finally, here is the complete specification for the CheckLinks class.</p>
+
+<pre><code>require 'spec_helper'
+
+describe CheckLinks::LinkChecker do
+  Given(:link_map) { { } }
+  Given(:parser) { FauxParser.new }
+  Given(:fetcher) { FauxFetcher.new(link_map) }
+
+  Given(:checker) {
+    CheckLinks::LinkChecker.new(parser: parser, fetcher: fetcher)
+  }
+
+  context "initial values" do
+    Then { checker.should_not be_nil }
+    Then { checker.bad_urls.should be_empty }
+  end
+
+  describe "running the checker" do
+    Given(:root_url) { "http://xyz.com/" }
+    Given(:prefix) { nil }
+
+    When { checker.check(root_url, prefix) }
+
+    context "with no links on the initial page" do
+      Given(:link_map) {
+        { "http://xyz.com/" =&gt; [ ] }
+      }
+      Then { checker.bad_urls.should contain_urls() }
+      Then { checker.good_urls.should contain_urls("http://xyz.com/") }
+    end
+
+    context "with two good links" do
+      Given(:link_map) {
+        {
+          "http://xyz.com/" =&gt; [ "http://xyz.com/a", "http://xyz.com/b" ],
+          "http://xyz.com/a" =&gt; [ ],
+          "http://xyz.com/b" =&gt; [ ],
+        }
+      }
+      Then { checker.bad_urls.should contain_urls() }
+      Then {
+        checker.good_urls.should contain_urls(
+          "http://xyz.com/",
+          "http://xyz.com/a",
+          "http://xyz.com/b")
+      }
+    end
+
+    context "with one bad links" do
+      Given(:link_map) {
+        {
+          "http://xyz.com/" =&gt; [ "http://xyz.com/a", "http://xyz.com/bad" ],
+          "http://xyz.com/a" =&gt; [ ],
+        }
+      }
+      Then { checker.bad_urls.should contain_urls("http://xyz.com/bad") }
+      Then {
+        checker.good_urls.should contain_urls(
+          "http://xyz.com/",
+          "http://xyz.com/a")
+      }
+    end
+
+    context "with nested links" do
+      Given(:link_map) {
+        {
+          "http://xyz.com/" =&gt; [ "http://xyz.com/a", "http://xyz.com/b" ],
+          "http://xyz.com/a" =&gt; [ ],
+          "http://xyz.com/b" =&gt; [ "http://xyz.com/b_sub" ],
+          "http://xyz.com/b_sub" =&gt; [ ],
+        }
+      }
+      Then { checker.bad_urls.should contain_urls() }
+      Then {
+        checker.good_urls.should contain_urls(
+          "http://xyz.com/",
+          "http://xyz.com/a",
+          "http://xyz.com/b",
+          "http://xyz.com/b_sub")
+      }
+    end
+
+    context "with outside links" do
+      Given(:link_map) {
+        {
+          "http://xyz.com/" =&gt; [ "http://xyz.com/a", "http://xyz.com/b" ],
+          "http://xyz.com/a" =&gt; [ ],
+          "http://xyz.com/b" =&gt; [ "http://outside.com/" ],
+          "http://outside.com/" =&gt; [ "http://outside.com/a" ],
+          "http://outside.com/a" =&gt; [ "http://outside.com/other" ],
+        }
+      }
+      Then { checker.bad_urls.should contain_urls() }
+      Then {
+        checker.good_urls.should contain_urls(
+          "http://xyz.com/",
+          "http://xyz.com/a",
+          "http://xyz.com/b",
+          "http://outside.com/")
+      }
+    end
+
+    context "with outside links and a explicit prefix" do
+      Given(:prefix) { "http://xyz.com/page" }
+      Given(:root_url) { "http://xyz.com/page/index.html" }
+      Given(:link_map) {
+        {
+          "http://xyz.com/page/index.html" =&gt; [
+            "http://xyz.com/off",
+            "http://xyz.com/page/on"
+          ],
+          "http://xyz.com/off" =&gt; [ "http://xyz.com/a" ],
+          "http://xyz.com/page/on" =&gt; [ "http://xyz.com/b" ],
+          "http://xyz.com/b" =&gt; [ ],
+        }
+      }
+      Then { checker.bad_urls.should contain_urls() }
+      Then {
+        checker.good_urls.should contain_urls(
+          "http://xyz.com/page/index.html",
+          "http://xyz.com/off",
+          "http://xyz.com/page/on",
+          "http://xyz.com/b")
+      }
+    end
+
+    context "with duplicate links" do
+      Given(:link_map) {
+        {
+          "http://xyz.com/" =&gt; [ "http://xyz.com/a", "http://xyz.com/b" ],
+          "http://xyz.com/a" =&gt; [ "http://xyz.com/dup" ],
+          "http://xyz.com/b" =&gt; [ "http://xyz.com/dup" ],
+          "http://xyz.com/dup" =&gt; [ "http://xyz.com/dup2" ],
+          "http://xyz.com/dup2" =&gt; [ ],
+        }
+      }
+      Then { checker.bad_urls.should contain_urls() }
+      Then {
+        checker.good_urls.should contain_urls(
+          "http://xyz.com/",
+          "http://xyz.com/a",
+          "http://xyz.com/b",
+          "http://xyz.com/dup",
+          "http://xyz.com/dup2")
+      }
+    end
+
+    context "with circular dependencies" do
+      Given(:link_map) {
+        {
+          "http://xyz.com/" =&gt; [ "http://xyz.com/a", "http://xyz.com/b" ],
+          "http://xyz.com/a" =&gt; [ "http://xyz.com/b" ],
+          "http://xyz.com/b" =&gt; [ "http://xyz.com/a" ],
+        }
+      }
+      Then { checker.bad_urls.should contain_urls() }
+      Then {
+        checker.good_urls.should contain_urls(
+          "http://xyz.com/",
+          "http://xyz.com/a",
+          "http://xyz.com/b")
+      }
+    end
+
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Hint - Source for LinkChecker</h4>
+
+<div class="solution">
+
+<pre><code>module CheckLinks
+  class LinkChecker
+    attr_reader :good_urls, :bad_urls
+
+    def initialize(options={})
+      @fetcher = options[:fetcher] || CheckLinks::UrlFetcher.new
+      @parser  = options[:parser]  || CheckLinks::HtmlParser.new
+      @good_urls = []
+      @bad_urls = []
+      @unchecked_urls = []
+      @seen = {}
+      @prefix = nil
+    end
+
+    def check(url, prefix=nil)
+      prefix ||= url
+      @prefix = Regexp.new("^" + Regexp.quote(prefix))
+      add_url(url)
+      run
+    end
+
+    private
+
+    def run
+      while ! @unchecked_urls.empty?
+        url = @unchecked_urls.pop
+        next if seen?(url)
+        mark_seen(url)
+        body = fetch(url)
+        if body.nil?
+          @bad_urls &lt;&lt; url
+        else
+          @good_urls &lt;&lt; url
+          if has_prefix?(url)
+            new_urls = parse(url, body)
+            add_urls(new_urls)
+          end
+        end
+      end
+    end
+
+    def add_url(url)
+      @unchecked_urls &lt;&lt; url
+    end
+
+    def add_urls(urls)
+      urls.each do |url| add_url(url) end
+    end
+
+    def fetch(url)
+      @fetcher.fetch(url)
+    end
+
+    def parse(url, body)
+      @parser.parse(url, body)
+    end
+
+    def has_prefix?(url)
+      @prefix &amp;&amp; @prefix.match(url)
+    end
+
+    def seen?(url)
+      @seen[url]
+    end
+
+    def mark_seen(url)
+      @seen[url] = true
+    end
+  end
+end
+</code></pre>
+
+</div>
+
+<h3>Part 4 -- Tie it together with main program</h3>
+
+<p>Finally, we need to write a top level Ruby script that ties the whole
+thing together, reading URL and prefix from the command line and
+creating and invoking the LinkChecker object.</p>
+
+<p>The "check-links" file should go in the bin directory.</p>
+
+<p>The main program/main script file has several responsibilities.  It
+should</p>
+
+<ul>
+<li><p>Read any command line options and handle them appropriately.</p></li>
+<li><p>Create the initial classes (LinkChecker in this case) and invoke it
+with the correct URL and prefix (if a prefix was given).</p></li>
+</ul>
+
+
+<p>The command line options to be supported are:</p>
+
+<ul>
+<li><p><strong>-p</strong> <em>prefix_url</em> -- A prefix URL.  Only pages that have a url
+that starts with the prefix will be scanned for additional URLs.
+This prevents the link_checker from going wild and downloading the
+entire web.</p></li>
+<li><p><strong>-v</strong> -- Display the version of the program and exit.</p></li>
+</ul>
+
+
+<p>You can use the <a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/optparse/rdoc/OptionParser.html">optparse
+library</a>
+to handle the command line arguments</p>
+
+<p>You should be able to invoke check-links as follows:</p>
+
+<pre><code>ruby -Ilib bin/check-links -p http://site.com/something http://site.com/something/index.html
+</code></pre>
+
+<p><strong>NOTE:</strong> *Running the command with "ruby -Ilib" is inconvenient, but
+that will be addressed when we gem-ify the project.</p>
+
+<h4>Hint - Using optparse</h4>
+
+<div class="solution">
+
+<p>The <a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/optparse/rdoc/OptionParser.html">documentation for
+optparse</a>
+is fairly good, but here are some additional hints.</p>
+
+<p>I like to isolate the option handling in a method (generally called
+handle_options).  I like to pass ARGV as an argument to this method
+(allows for easier testing if I feel its warrented) and return a
+option hash as the result.  The structure of the handle_options method
+is something like this:</p>
+
+<pre><code>def handle_options(args)
+  options = { ... default values for options here ... }
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: example.rb [options]"
+
+    opts.on("-v", "--version", "Display the version") do |value|
+      puts "Version 1.0"
+      exit
+    end
+
+    opts.on("-l", "--logging=level", "Site prefix URL") do |value|
+      options[:logging] = value.to_i
+    end
+  end
+  options       # return the options hash
+end
+</code></pre>
+
+</div>
+
+<h4>Hint - The handle_options source</h4>
+
+<div class="solution">
+
+<pre><code>require 'optparse'
+
+def handle_options(args)
+  options = {
+    logging: 0
+  }
+
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: check-links [options] url_to_check"
+
+    opts.on("-p", "--prefix=PREFIX", "Establish a site prefix") do |v|
+      options[:prefix] = v
+    end
+
+    opts.on("-v", "--version", "Version") do |v|
+      puts "Version 1.0"
+      exit
+    end
+  end
+  parser.parse!(args)
+  options
+end
+</code></pre>
+
+</div>
+
+<h4>Hint - Source for check-links</h4>
+
+<div class="solution">
+
+<p>Here is the complete source code for the check-links file.</p>
+
+<pre><code>#!/usr/bin/env ruby
+
+require 'optparse'
+require 'check_links'
+
+
+def handle_options(args)
+  options = {
+    logging: 0
+  }
+
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: check-links [options] url_to_check"
+
+    opts.on("-p", "--prefix=PREFIX", "Establish a site prefix") do |v|
+      options[:prefix] = v
+    end
+
+    opts.on("-v", "--version", "Version") do |v|
+      puts "Version 1.0"
+      exit
+    end
+  end
+  parser.parse!(args)
+  options
+end
+
+def main(args)
+  options = handle_options(args)
+
+  link_checker = CheckLinks::LinkChecker.new
+  link_checker.check(ARGV.first, options[:prefix])
+
+  if link_checker.bad_urls.empty?
+    puts "No bad URLs"
+  else
+    puts "#{link_checker.bad_urls.size} Bad URLs:"
+    link_checker.bad_urls.each do |url|
+      puts url
+    end
+  end
+end
+
+main(ARGV) if $0 == __FILE__
+</code></pre>
+
+</div>
+
+<h3>Alternative Lab -- Single Page Fetcher</h3>
+
+<p>This is a simplified version of the link checker lab.  Instead of
+recursive finding <em>all</em> the links on the referenced pages, only check
+the links on the urls named on the command line.</p>
+
+<p>For example, the command:</p>
+
+<pre><code>check-links http://onestepback.org http://google.com http://www.ruby-lang.org
+</code></pre>
+
+<p>will only check the links on the three pages listed.  There is no need
+to use <code>optparse</code> to handle prefixes.</p>
+
+<p>Output should be something like this:</p>
+
+<pre><code>$ check-links http://onestepback.org http://google.com http://www.ruby-lang.org
+Page http://onestepback.org
+Bad URLs:
+  http://bad-url
+
+Page http://google.com
+No bad URLs
+
+Page http://www.ruby-lang.org
+Bad URLs:
+  http://bad-url
+  http://another-bad-url
+</code></pre>
+
+<hr>
+
+
+<p><a href="index.html">back</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+

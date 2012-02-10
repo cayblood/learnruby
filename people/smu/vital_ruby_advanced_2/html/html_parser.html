@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vital Ruby Advanced Projects</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Project descriptions for the EdgeCase Vital Testing workshop." />
+    <link rel="stylesheet" type="text/css" href="stylesheets/projects.css" media="all" />
+    <script type="text/javascript" src="javascripts/jquery.js"></script>
+    <script type="text/javascript" src="javascripts/projects.js"></script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content">
+        <h1>HTML Parsing Lab</h1>
+
+<h2>Goals</h2>
+
+<ul>
+<li>Learn about Nokogiri and parsing HTML and XML documents</li>
+</ul>
+
+
+<h2>Lab</h2>
+
+<p>Write a class named HtmlParser.  The class should have a single method
+named parse that takes a string of HTML text and returns a list of URL
+links found in the document.  The URLs returned should be absolute
+URLs (i.e. relative links should be normalized to be full URLs).</p>
+
+<p>You can use <a href="http://nokogiri.org/">Nokogiri</a> to parse the HTML string.
+The Ruby
+<a href="http://www.ruby-doc.org/stdlib-1.9.3/libdoc/uri/rdoc/URI.html#method-c-parse">URI</a>
+library is useful for converting relative URLs to the full thing.</p>
+
+<p>Here's the outline:</p>
+
+<pre><code>class HtmlParser
+  def parse(html_string)
+    # Write this code
+  end
+end
+</code></pre>
+
+<h4>Hint: Nokogiri (click to view)</h4>
+
+<div class="solution">
+
+<p>You can get a Nokogiri DOM document by parsing the string</p>
+
+<pre><code>doc = Nokogiri::HTML(html_string)
+</code></pre>
+
+<p>Links can be extracted from the document using the "css" method.</p>
+
+<pre><code>links = doc.css('a')
+</code></pre>
+
+<p>Each link represents an '<a href="...">...</a>' tag.  You can get the
+href with:</p>
+
+<pre><code>href = link.attribute['href']
+</code></pre>
+
+</div>
+
+<h4>Hint: URI (click to view)</h4>
+
+<div class="solution">
+
+<p>URI can be used to parse a URL string.</p>
+
+<pre><code>uri = URI.parse(url_string)
+</code></pre>
+
+<p>To create an absolute reference from a relative, you will need to
+merge the relative URL with the source URL.</p>
+
+<pre><code>uri = URI.parse(source_url_string).merge(URI.parse(relative_url_string))
+</code></pre>
+
+</div>
+
+<h4>Hint: Specification (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>require 'spec_helper'
+
+describe HtmlParser do
+  Given(:parser) { HtmlParser.new }
+  Given(:html) { "" }
+  Given(:source) { "http://x.com/" }
+
+  Given(:url) { "http://x.com/" }
+  Given(:urls) { [url] }
+  Given(:anchors) { urls.map { |u| %(&lt;a href="#{u}"&gt;Link&lt;/a&gt;) } }
+
+  Given(:html) {
+    "&lt;html&gt;&lt;body&gt;&lt;h1&gt;HI&lt;/h1&gt;" +
+    anchors.join +
+    "&lt;/body&gt;&lt;/html&gt;"
+  }
+
+  When(:result) { parser.parse(source, html) }
+
+  context "with an empty body" do
+    Given(:html) { "" }
+    Then { result.should == [] }
+  end
+
+  context "with no links" do
+    Given(:html) { "&lt;html&gt;&lt;body&gt;&lt;h1&gt;HI&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;" }
+    Then { result.should == [] }
+  end
+
+  context "with a single link" do
+    Then { result.should == ["http://x.com/"] }
+  end
+
+  context "with multiple link" do
+    Given(:urls) { ["http://x.com", "http://x.com/b" ] }
+    Then { result.should == urls }
+  end
+
+  context "with path-link links" do
+    Given(:urls) { ["/a", "b", "./c"] }
+    Then { result.should == ["http://x.com/a", "http://x.com/b", "http://x.com/c"] }
+  end
+
+  context "with off-site links" do
+    Given(:source) { "http://x.com/page" }
+    Given(:url) { "http://z.com/index.html" }
+    Then { result.should == ["http://z.com/index.html"] }
+  end
+
+  context "with non-html links" do
+    Given(:urls) { ["mailto://x@z.com", "http://x.com/"] }
+    Then { result.should == ["http://x.com/"] }
+  end
+
+  context "with hash pieces links" do
+    Given(:urls) { ["#hash", "http://x.com/"] }
+    Then { result.should == ["http://x.com/"] }
+  end
+
+  context "with a bad URI" do
+    Given(:source) { "http://x.com/page" }
+    Given(:urls) {  [ "a\nb", "b" ] }
+    Then { result.should == ["http://x.com/b"] }
+  end
+end
+</code></pre>
+
+</div>
+
+<h4>Solution: (click to view)</h4>
+
+<div class="solution">
+
+<pre><code>require 'nokogiri'
+
+class HtmlParser
+  def parse(source_url, body)
+    doc = Nokogiri::HTML(body)
+    urls = doc.css('a').map { |node|
+      att = node.attribute("href")
+      att ? att.text : nil }
+    normalize(source_url, urls.compact)
+  end
+
+  private
+
+  def normalize(source_url, urls)
+    urls.map { |u| normalize_url(source_url, u) }.compact
+  end
+
+  def normalize_url(source_url, url)
+    return nil if url =~ /^#/
+    URI.parse(source_url).merge(URI.parse(url)).to_s
+  rescue StandardError =&gt; ex
+    nil
+  end
+end
+</code></pre>
+
+</div>
+
+<hr>
+
+
+<p><a href="index.html">back</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+
